@@ -5,7 +5,7 @@
 
 // Application State
 const state = {
-  roadmap: null,
+  roadmap: (typeof window !== 'undefined' && window.ROADMAP_DATA) || null,
   progress: null,
   drafts: [],
   notes: [],
@@ -33,18 +33,20 @@ const state = {
 };
 
 // Configure Marked with Highlight.js
-marked.setOptions({
-  highlight: function(code, lang) {
-    if (window.hljs) {
-      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-      return hljs.highlight(code, { language }).value;
-    }
-    return code;
-  },
-  langPrefix: 'hljs language-',
-  breaks: true,
-  gfm: true
-});
+if (window.marked) {
+  marked.setOptions({
+    highlight: function(code, lang) {
+      if (window.hljs) {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        return hljs.highlight(code, { language }).value;
+      }
+      return code;
+    },
+    langPrefix: 'hljs language-',
+    breaks: true,
+    gfm: true
+  });
+}
 
 // Web Audio API Synthesizer (Zero external sound dependencies)
 const soundFx = {
@@ -213,6 +215,14 @@ const dom = {
   btnDownloadMarkdown: document.getElementById('btnDownloadMarkdown'),
   btnToggleZen: document.getElementById('btnToggleZen'),
 
+  // Days Sidebar Elements
+  daysSidebar: document.getElementById('daysSidebar'),
+  daysSidebarList: document.getElementById('daysSidebarList'),
+  daysSearchInput: document.getElementById('daysSearchInput'),
+  sidebarCountBadge: document.getElementById('sidebarCountBadge'),
+  btnToggleDaysSidebar: document.getElementById('btnToggleDaysSidebar'),
+  btnToggleDaysSidebarHeader: document.getElementById('btnToggleDaysSidebarHeader'),
+
   // Roadmap Elements
   weeksAccordionContainer: document.getElementById('weeksAccordionContainer'),
   matrixGridContainer: document.getElementById('matrixGridContainer'),
@@ -223,6 +233,8 @@ const dom = {
   roadmapProgressBadge: document.getElementById('roadmapProgressBadge'),
   phaseBtns: document.querySelectorAll('.phase-btn'),
   streakVal: document.getElementById('streakVal'),
+  btnExpandAllWeeks: document.getElementById('btnExpandAllWeeks'),
+  btnCollapseAllWeeks: document.getElementById('btnCollapseAllWeeks'),
 
   // Timer Elements
   timerDisplay: document.getElementById('timerDisplay'),
@@ -578,6 +590,32 @@ function setupEditorEvents() {
     publishNoteToGitHub();
   });
 
+  // Days Sidebar Toggle
+  const toggleSidebar = () => {
+    if (dom.daysSidebar) dom.daysSidebar.classList.toggle('collapsed');
+  };
+  if (dom.btnToggleDaysSidebar) dom.btnToggleDaysSidebar.addEventListener('click', toggleSidebar);
+  if (dom.btnToggleDaysSidebarHeader) dom.btnToggleDaysSidebarHeader.addEventListener('click', toggleSidebar);
+
+  // Real-time Days Search Filter
+  if (dom.daysSearchInput) {
+    dom.daysSearchInput.addEventListener('input', (e) => {
+      renderDaysSidebar(e.target.value);
+    });
+  }
+
+  // Expand / Collapse All Weeks in Roadmap
+  if (dom.btnExpandAllWeeks) {
+    dom.btnExpandAllWeeks.addEventListener('click', () => {
+      document.querySelectorAll('.week-card').forEach(c => c.classList.add('open'));
+    });
+  }
+  if (dom.btnCollapseAllWeeks) {
+    dom.btnCollapseAllWeeks.addEventListener('click', () => {
+      document.querySelectorAll('.week-card').forEach(c => c.classList.remove('open'));
+    });
+  }
+
   // Keyboard shortcut Ctrl+Enter / Cmd+Enter
   window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -621,10 +659,20 @@ function renderMarkdown() {
         <i data-lucide="eye" class="empty-icon"></i>
         <p>Live preview will appear here formatted with syntax highlighting.</p>
       </div>`;
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
     return;
   }
-  dom.markdownPreview.innerHTML = marked.parse(rawText);
+  try {
+    const parser = (typeof marked !== 'undefined') ? marked : (typeof window !== 'undefined' && window.marked ? window.marked : null);
+    if (parser) {
+      dom.markdownPreview.innerHTML = typeof parser.parse === 'function' ? parser.parse(rawText) : parser(rawText);
+    } else {
+      dom.markdownPreview.innerHTML = `<pre style="white-space: pre-wrap; font-family: var(--font-mono);">${escapeHtml(rawText)}</pre>`;
+    }
+  } catch (err) {
+    console.warn('Markdown parsing error:', err);
+    dom.markdownPreview.innerHTML = `<pre style="white-space: pre-wrap; font-family: var(--font-mono);">${escapeHtml(rawText)}</pre>`;
+  }
 }
 
 function updateEditorStats() {
@@ -684,6 +732,9 @@ window.insertSnippet = (code) => {
 
 // Select Day & Automatically Load Full Content
 async function selectDayAndLoadContent(dayNum) {
+  if (!state.roadmap && typeof window !== 'undefined' && window.ROADMAP_DATA) {
+    state.roadmap = window.ROADMAP_DATA;
+  }
   if (!state.roadmap || !state.roadmap.days) return;
   const dayData = state.roadmap.days.find(d => d.day === dayNum);
   if (!dayData) return;
@@ -694,6 +745,16 @@ async function selectDayAndLoadContent(dayNum) {
   dom.filenameInput.value = dayData.file || `day-${String(dayNum).padStart(2, '0')}.md`;
   dom.titleInput.value = dayData.title;
   updateCommitMessageSuggestion();
+
+  // Update active state in Days Sidebar
+  document.querySelectorAll('.days-sidebar-item').forEach(el => {
+    const elDay = parseInt(el.getAttribute('data-day'), 10);
+    el.classList.toggle('active', elDay === dayNum);
+  });
+  const activeSidebarEl = document.querySelector(`.days-sidebar-item[data-day="${dayNum}"]`);
+  if (activeSidebarEl) {
+    activeSidebarEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
 
   // 1. Look for existing committed note in repository
   const expectedPath = `${dayData.folder}/${dayData.file}`;
@@ -1266,16 +1327,79 @@ async function publishNoteToGitHub() {
 // 90-Day Roadmap, Matrix & Progress
 // ==========================================
 async function loadRoadmap() {
-  try {
-    const res = await fetch('/api/roadmap');
-    state.roadmap = await res.json();
+  if (typeof window !== 'undefined' && window.ROADMAP_DATA && !state.roadmap) {
+    state.roadmap = window.ROADMAP_DATA;
     populateDaySelect();
+    renderDaysSidebar();
     renderRoadmapWeeks();
     renderVisualMatrix();
+  }
+  try {
+    const res = await fetch('/api/roadmap');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.days) {
+        state.roadmap = data;
+        populateDaySelect();
+        renderDaysSidebar();
+        renderRoadmapWeeks();
+        renderVisualMatrix();
+      }
+    }
   } catch (err) {
-    console.warn('Could not load roadmap:', err);
+    console.warn('Could not load roadmap from API, using preloaded data:', err);
   }
 }
+
+function renderDaysSidebar(filterQuery = '') {
+  if (!state.roadmap || !state.roadmap.days || !dom.daysSidebarList) return;
+  const completed = (state.progress && state.progress.completedDays) || [];
+  const currentSelectedDay = parseInt(dom.daySelect ? dom.daySelect.value : '1', 10) || 1;
+  const q = (filterQuery || '').toLowerCase().trim();
+
+  const filtered = state.roadmap.days.filter(d => {
+    if (!q) return true;
+    const dayStr = `day ${d.day}`;
+    return d.title.toLowerCase().includes(q) || 
+           dayStr.includes(q) || 
+           String(d.day) === q ||
+           (d.folder && d.folder.toLowerCase().includes(q));
+  });
+
+  if (dom.sidebarCountBadge) {
+    dom.sidebarCountBadge.textContent = `${filtered.length} Days`;
+  }
+
+  if (filtered.length === 0) {
+    dom.daysSidebarList.innerHTML = `
+      <div style="padding: 18px 12px; text-align: center; color: var(--fg-muted); font-size: 12px;">
+        No curriculum days matching "${escapeHtml(q)}"
+      </div>
+    `;
+    return;
+  }
+
+  dom.daysSidebarList.innerHTML = filtered.map(d => {
+    const isDone = completed.includes(d.day);
+    const isActive = d.day === currentSelectedDay;
+    return `
+      <div class="days-sidebar-item ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}" 
+           data-day="${d.day}"
+           onclick="handleSidebarDayClick(${d.day})"
+           title="Day ${d.day}: ${escapeHtml(d.title)}">
+        <span class="day-chip-badge">D${String(d.day).padStart(2, '0')}</span>
+        <span class="day-chip-title">${escapeHtml(d.title)}</span>
+        ${isDone ? '<i data-lucide="check" class="day-chip-icon"></i>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
+
+window.handleSidebarDayClick = (dayNum) => {
+  selectDayAndLoadContent(dayNum);
+};
 
 function populateDaySelect() {
   if (!state.roadmap || !state.roadmap.days) return;
@@ -1286,7 +1410,7 @@ function populateDaySelect() {
 
 // Render 90-Day Visual Matrix / Punch Card
 function renderVisualMatrix() {
-  if (!state.roadmap || !dom.matrixGridContainer) return;
+  if (!state.roadmap || !Array.isArray(state.roadmap.days) || !dom.matrixGridContainer) return;
   const completed = (state.progress && state.progress.completedDays) || [];
   const currentActiveDay = (state.progress && state.progress.activeDay) || 2;
 
@@ -1314,7 +1438,7 @@ function renderVisualMatrix() {
 }
 
 function renderRoadmapWeeks() {
-  if (!state.roadmap) return;
+  if (!state.roadmap || !Array.isArray(state.roadmap.weeks) || !Array.isArray(state.roadmap.days) || !dom.weeksAccordionContainer) return;
   const { weeks, days } = state.roadmap;
   const completed = (state.progress && state.progress.completedDays) || [];
 
@@ -1593,13 +1717,14 @@ async function loadNotes() {
 }
 
 function renderNotesTree(notesList) {
-  if (!notesList || notesList.length === 0) {
+  if (!dom.notesTreeContainer) return;
+  if (!Array.isArray(notesList) || notesList.length === 0) {
     dom.notesTreeContainer.innerHTML = `
       <div class="empty-state">
         <i data-lucide="file-text" class="empty-icon"></i>
         <p>No notes found.</p>
       </div>`;
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
     return;
   }
 

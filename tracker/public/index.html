@@ -10,15 +10,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <!-- Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Markdown Parser -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <!-- Highlight.js for Syntax Highlighting in Live Preview -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <!-- Confetti Celebration -->
+  <!-- Standalone Vendor Libraries (Local, Zero-Failure) -->
+  <link rel="stylesheet" href="vendor/github-dark.min.css">
+  <script src="vendor/lucide.min.js"></script>
+  <script src="vendor/marked.min.js"></script>
+  <script src="vendor/highlight.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Preloaded Synchronous 90-Day Curriculum Data -->
+  <script src="data/roadmap.js"></script>
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -38,10 +38,14 @@
       </div>
 
       <div class="header-actions">
+        <button class="btn btn-secondary btn-sm" id="btnToggleDaysSidebarHeader" title="Toggle 90-Day Curriculum Sidebar">
+          <i data-lucide="calendar"></i>
+          <span>90 Days List</span>
+        </button>
         <span class="streak-pill" id="streakVal" title="Daily Learning Streak">🔥 1 Day</span>
-        <button class="btn btn-secondary btn-sm" id="btnOpenCheatsheet" title="Command & Syntax Snippets">
+        <button class="btn btn-secondary btn-sm hide-on-mobile" id="btnOpenCheatsheet" title="Command & Syntax Snippets">
           <i data-lucide="terminal"></i>
-          <span class="hide-on-mobile">Snippets</span>
+          <span>Snippets</span>
         </button>
         <button class="btn btn-primary btn-sm" id="btnQuickNewNote">
           <i data-lucide="plus"></i>
@@ -92,8 +96,10 @@
           <!-- Row 1: Target Metadata Grid -->
           <div class="metadata-grid">
             <div class="meta-field day-field">
-              <label for="daySelect">Day</label>
-              <select id="daySelect" class="form-control"></select>
+              <label for="daySelect">Day (1-90)</label>
+              <select id="daySelect" class="form-control">
+                <!-- Dynamically populated or prefilled from roadmap.js -->
+              </select>
             </div>
 
             <div class="meta-field folder-field">
@@ -127,6 +133,9 @@
           <!-- Row 2: Action Bar (Templates, Toolbar, View Toggles) -->
           <div class="studio-action-row">
             <div class="quick-templates-bar">
+              <button class="btn btn-ghost btn-xs" id="btnToggleDaysSidebar" title="Toggle 90-Day Sidebar">
+                <i data-lucide="sidebar"></i> <span>Days Sidebar</span>
+              </button>
               <button class="btn btn-ghost btn-xs" id="btnLoad5Questions" title="Load 5 Core Questions Template">
                 <i data-lucide="help-circle"></i> <span>5 Questions</span>
               </button>
@@ -185,51 +194,64 @@
           </div>
         </div>
 
-        <!-- Split Panes Wrapper -->
-        <div class="studio-panes-wrapper split-mode" id="panesWrapper">
-          <!-- Left: Editor Pane -->
-          <div class="editor-pane">
-            <div class="pane-header">
-              <div class="pane-title">
-                <i data-lucide="edit-3"></i>
-                <span>Markdown Source</span>
+        <!-- Studio Workspace with Days Sidebar + Split Panes -->
+        <div class="studio-workspace">
+          <!-- Left: 90 Days Curriculum Sidebar -->
+          <aside class="days-sidebar" id="daysSidebar">
+            <div class="days-sidebar-header">
+              <div class="days-sidebar-title">
+                <i data-lucide="calendar"></i>
+                <span>90-Day Curriculum</span>
               </div>
-              <div class="editor-stats">
-                <span id="wordCountLabel">0 words</span>
-                <span class="sep">•</span>
-                <span id="charCountLabel">0 chars</span>
-                <span class="sep">•</span>
-                <span id="readingTimeLabel">1 min read</span>
-              </div>
+              <span class="tab-badge" id="sidebarCountBadge">90 Days</span>
             </div>
-            <textarea id="markdownEditor" class="markdown-textarea" spellcheck="false" placeholder="Start typing your daily learning notes or paste your practice session notes here...
-
-Use the 5 Core Questions:
-1. What is it?
-2. How does it work?
-3. Why does a security professional need it?
-4. What did I practise?
-5. What did I learn from the exercise?"></textarea>
-          </div>
-
-          <!-- Right: Live Preview Pane -->
-          <div class="preview-pane">
-            <div class="pane-header">
-              <div class="pane-title">
-                <i data-lucide="eye"></i>
-                <span>Live Preview</span>
-              </div>
-              <div class="pane-actions">
-                <button class="btn btn-ghost btn-xs" id="btnDownloadMarkdown" title="Download Markdown File">
-                  <i data-lucide="download"></i> <span>Download .md</span>
-                </button>
-                <button class="btn btn-ghost btn-xs" id="btnCopyMarkdown" title="Copy Raw Markdown">
-                  <i data-lucide="copy"></i> <span>Copy</span>
-                </button>
-              </div>
+            <div class="days-sidebar-search">
+              <input type="text" id="daysSearchInput" class="form-control" placeholder="Search Day 1 to 90...">
             </div>
-            <div id="markdownPreview" class="markdown-body">
-              <!-- Rendered via marked.js + highlight.js -->
+            <div class="days-sidebar-list" id="daysSidebarList">
+              <!-- Populated dynamically with all 90 days -->
+            </div>
+          </aside>
+
+          <!-- Right: Split Panes Wrapper -->
+          <div class="studio-panes-wrapper split-mode" id="panesWrapper">
+            <!-- Left: Editor Pane -->
+            <div class="editor-pane">
+              <div class="pane-header">
+                <div class="pane-title">
+                  <i data-lucide="edit-3"></i>
+                  <span>Markdown Source</span>
+                </div>
+                <div class="editor-stats">
+                  <span id="wordCountLabel">0 words</span>
+                  <span class="sep">•</span>
+                  <span id="charCountLabel">0 chars</span>
+                  <span class="sep">•</span>
+                  <span id="readingTimeLabel">1 min read</span>
+                </div>
+              </div>
+              <textarea id="markdownEditor" class="markdown-textarea" spellcheck="false" placeholder="Loading day curriculum note..."></textarea>
+            </div>
+
+            <!-- Right: Live Preview Pane -->
+            <div class="preview-pane">
+              <div class="pane-header">
+                <div class="pane-title">
+                  <i data-lucide="eye"></i>
+                  <span>Live Preview</span>
+                </div>
+                <div class="pane-actions">
+                  <button class="btn btn-ghost btn-xs" id="btnDownloadMarkdown" title="Download Markdown File">
+                    <i data-lucide="download"></i> <span>Download .md</span>
+                  </button>
+                  <button class="btn btn-ghost btn-xs" id="btnCopyMarkdown" title="Copy Raw Markdown">
+                    <i data-lucide="copy"></i> <span>Copy</span>
+                  </button>
+                </div>
+              </div>
+              <div id="markdownPreview" class="markdown-body">
+                <!-- Rendered via marked.js + highlight.js -->
+              </div>
             </div>
           </div>
         </div>
@@ -285,7 +307,7 @@ Use the 5 Core Questions:
           <div class="card-header-row">
             <div class="card-title">
               <i data-lucide="grid"></i>
-              <h3>90-Day Visual Habit Matrix</h3>
+              <h3>90-Day Contribution Habit Matrix</h3>
             </div>
             <div class="matrix-legend">
               <span class="legend-item"><span class="legend-box done"></span> Done</span>
@@ -307,8 +329,24 @@ Use the 5 Core Questions:
         </div>
 
         <!-- Weeks & Days Grid -->
-        <div class="weeks-accordion" id="weeksAccordionContainer">
-          <!-- Populated dynamically via JS -->
+        <div class="weeks-accordion-wrap">
+          <div class="card-header-row" style="margin-bottom: 12px;">
+            <div class="card-title">
+              <i data-lucide="calendar"></i>
+              <h3>Curriculum Weeks & Daily Breakdown</h3>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-xs" id="btnExpandAllWeeks">
+                <i data-lucide="maximize-2"></i> Expand All
+              </button>
+              <button class="btn btn-secondary btn-xs" id="btnCollapseAllWeeks">
+                <i data-lucide="minimize-2"></i> Collapse All
+              </button>
+            </div>
+          </div>
+          <div class="weeks-accordion" id="weeksAccordionContainer">
+            <!-- Populated dynamically via JS -->
+          </div>
         </div>
       </div>
     </section>
@@ -422,7 +460,7 @@ Use the 5 Core Questions:
               <button class="btn btn-secondary btn-xs" id="btnEditInStudio">
                 <i data-lucide="edit-3"></i> <span>Edit in Studio</span>
               </button>
-              <a href="#" target="_blank" class="btn btn-ghost btn-xs" id="btnOpenOnGitHub">
+              <a href="#" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-xs" id="btnOpenOnGitHub">
                 <i data-lucide="external-link"></i> <span>View on GitHub</span>
               </a>
             </div>
