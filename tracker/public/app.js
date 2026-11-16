@@ -293,8 +293,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadStatus()
   ]);
 
-  // Check LocalStorage for unsaved draft
-  restoreLocalDraft();
+  // Restore unsaved draft or auto-load active day note with complete data
+  const hasLocalDraft = restoreLocalDraft();
+  if (!hasLocalDraft && (!dom.markdownEditor.value || !dom.markdownEditor.value.trim())) {
+    const activeDay = (state.progress && state.progress.activeDay) || 1;
+    await selectDayAndLoadContent(activeDay);
+  }
 
   // Periodic Auto-save every 5 seconds
   setInterval(autoSaveLocalDraft, 5000);
@@ -459,15 +463,7 @@ function setupEditorEvents() {
   // Day dropdown change
   dom.daySelect.addEventListener('change', () => {
     const dayNum = parseInt(dom.daySelect.value, 10);
-    if (!state.roadmap) return;
-    const dayData = state.roadmap.days.find(d => d.day === dayNum);
-    if (dayData) {
-      dom.titleInput.value = dayData.title;
-      dom.folderSelect.value = dayData.folder;
-      dom.folderPrefixLabel.textContent = `${dayData.folder}/`;
-      dom.filenameInput.value = dayData.file || `day-${String(dayNum).padStart(2, '0')}.md`;
-      updateCommitMessageSuggestion();
-    }
+    selectDayAndLoadContent(dayNum);
   });
 
   // Title changes
@@ -685,6 +681,97 @@ window.insertSnippet = (code) => {
   showToast('Snippet Inserted', code, 'success');
   soundFx.playBeep(600, 0.08);
 };
+
+// Select Day & Automatically Load Full Content
+async function selectDayAndLoadContent(dayNum) {
+  if (!state.roadmap || !state.roadmap.days) return;
+  const dayData = state.roadmap.days.find(d => d.day === dayNum);
+  if (!dayData) return;
+
+  dom.daySelect.value = String(dayNum);
+  dom.folderSelect.value = dayData.folder;
+  dom.folderPrefixLabel.textContent = `${dayData.folder}/`;
+  dom.filenameInput.value = dayData.file || `day-${String(dayNum).padStart(2, '0')}.md`;
+  dom.titleInput.value = dayData.title;
+  updateCommitMessageSuggestion();
+
+  // 1. Look for existing committed note in repository
+  const expectedPath = `${dayData.folder}/${dayData.file}`;
+  const existingNote = state.notes && state.notes.find(n => 
+    n.path === expectedPath || 
+    n.filename === dayData.file ||
+    (dayNum === 1 && n.filename === 'day-01-networking-fundamentals.md') ||
+    n.title.toLowerCase().startsWith(`day ${String(dayNum).padStart(2, '0')}`) ||
+    n.title.toLowerCase().startsWith(`day ${dayNum}:`)
+  );
+
+  if (existingNote) {
+    try {
+      const res = await fetch(`/api/note?path=${encodeURIComponent(existingNote.path)}`);
+      const data = await res.json();
+      if (data && data.content) {
+        dom.markdownEditor.value = data.content;
+        renderMarkdown();
+        updateEditorStats();
+        showToast('Committed Note Loaded', `Loaded note for Day ${dayNum} (${existingNote.filename})`, 'success');
+        return;
+      }
+    } catch (e) {
+      console.warn('Could not fetch existing note:', e);
+    }
+  }
+
+  // 2. Look for existing draft
+  const existingDraft = state.drafts && state.drafts.find(d => 
+    d.filename === dayData.file || d.day === dayNum
+  );
+  if (existingDraft && existingDraft.content) {
+    dom.markdownEditor.value = existingDraft.content;
+    renderMarkdown();
+    updateEditorStats();
+    showToast('Draft Loaded', `Loaded saved draft for Day ${dayNum}`, 'info');
+    return;
+  }
+
+  // 3. Auto-populate structured curriculum template for this day
+  const weekInfo = state.roadmap.weeks ? state.roadmap.weeks.find(w => w.week === dayData.week) : null;
+  const phaseInfo = state.roadmap.phases ? state.roadmap.phases.find(p => p.id === (weekInfo ? weekInfo.phaseId : 1)) : null;
+
+  const defaultTemplate = `# Day ${String(dayNum).padStart(2, '0')}: ${dayData.title}
+
+- **Date:** ${new Date().toISOString().split('T')[0]}
+- **Phase:** ${phaseInfo ? phaseInfo.name : 'Technical Foundations'}
+- **Curriculum:** Week ${dayData.week} — ${weekInfo ? weekInfo.title : ''}
+- **Module Directory:** \`${dayData.folder}/\`
+- **Primary Resource:** [${weekInfo ? weekInfo.resource : 'Documentation'}](${weekInfo ? weekInfo.resourceUrl : '#'})
+- **Practical Goal:** ${weekInfo ? weekInfo.goal : ''}
+
+---
+
+## 1. What is it?
+Explain **${dayData.title}** in your own words. Focus on the core architectural mechanism and technical definition.
+
+## 2. How does it work?
+Detail the step-by-step mechanism, request/response cycles, packet headers, or operating system structures.
+
+## 3. Why does a Red Teamer / Security Professional need it?
+How do adversaries abuse or bypass this? What is the offensive attack surface and defensive detection strategy?
+
+## 4. What did I practise today?
+Detail hands-on terminal commands, packet analyses, scripts written, or labs solved during your 30-minute protocol.
+
+\`\`\`bash
+# Commands executed and terminal output:
+\`\`\`
+
+## 5. What did I learn from the exercise?
+Key engineering takeaways, pitfalls encountered, and active recall summary.
+`;
+
+  dom.markdownEditor.value = defaultTemplate;
+  renderMarkdown();
+  updateEditorStats();
+}
 
 // Templates
 function insert5QuestionsTemplate() {
@@ -1330,12 +1417,8 @@ window.toggleDayProgress = async (dayNum) => {
 };
 
 window.startWritingForDay = (dayNum) => {
-  dom.daySelect.value = String(dayNum);
-  const event = new Event('change');
-  dom.daySelect.dispatchEvent(event);
-  insert5QuestionsTemplate();
+  selectDayAndLoadContent(dayNum);
   switchTab('studio');
-  showToast('Ready to Write', `Configured Studio for Day ${dayNum}`, 'info');
 };
 
 // Phase Filters
