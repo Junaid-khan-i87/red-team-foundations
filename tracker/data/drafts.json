@@ -1,0 +1,12 @@
+[
+  {
+    "id": "draft_day2_preview",
+    "day": 2,
+    "title": "LAN, WAN, Routers, Switches, and Gateways",
+    "folder": "01-networking",
+    "filename": "lan-wan-routing.md",
+    "content": "# Day 02: LAN, WAN, Routers, Switches, and Gateways\n\n- **Date:** 2026-11-17\n- **Module:** `01-networking`\n- **Track:** Red Team Foundation Roadmap (Day 2 of 90)\n- **Status:** Draft / In Progress\n\n---\n\n## 1. What is it?\nLocal Area Networks (LAN) and Wide Area Networks (WAN) define the geographical scope and administrative boundaries of computer networks.\n\nKey devices:\n- **Hub:** Physical layer (L1) repeater, broadcasts all frames to all ports (insecure by design).\n- **Switch:** Data Link layer (L2) intelligent device maintaining a MAC address table (CAM table) to forward frames only to the designated port.\n- **Router:** Network layer (L3) device connecting disparate subnets/networks, directing packets via routing tables.\n- **Gateway:** Entrance/exit point between internal network and external internet (translates addresses via NAT).\n\n---\n\n## 2. How does it work?\n[Write detailed mechanism here...]\n\n---\n\n## 3. Why does a security professional need it?\n- MAC Flooding & ARP Spoofing against switches.\n- Rogue Gateway attacks and default route hijacking.\n\n---\n\n## 4. What did I practise?\n```bash\n# Inspect default route and gateway\nip route show\n```\n\n---\n\n## 5. What did I learn from the exercise?\n[Document learnings here...]\n",
+    "tags": ["networking", "routers", "switches"],
+    "updatedAt": "2026-11-16T16:30:00.000Z"
+  }
+]

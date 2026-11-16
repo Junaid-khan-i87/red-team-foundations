@@ -1,0 +1,14 @@
+{
+  "completedDays": [
+    1,
+    2
+  ],
+  "currentStreak": 1,
+  "lastActivityDate": "2026-11-16",
+  "activeDay": 1,
+  "stats": {
+    "totalCommits": 2,
+    "totalNotes": 13,
+    "totalMinutesStudied": 30
+  }
+}

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Red Team Foundations // 90-Day Command Center & Journal</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Markdown Parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Confetti Celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Cyber Background Canvas & Grid -->
+  <div class="cyber-grid"></div>
+  <div class="cyber-glow glow-top"></div>
+  <div class="cyber-glow glow-bottom"></div>
+
+  <!-- Header Banner -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      <div class="brand-badge">
+        <span class="pulsing-dot"></span>
+        <span class="brand-code">RED TEAM // OPS</span>
+      </div>
+      <div class="brand-title-wrap">
+        <h1 class="brand-title">FOUNDATION ROADMAP <span>90-DAYS</span></h1>
+        <p class="brand-sub">Daily Learning Journal & GitHub Sync Engine</p>
+      </div>
+    </div>
+
+    <div class="mission-stats-strip">
+      <div class="stat-pill">
+        <i data-lucide="calendar"></i>
+        <div>
+          <span class="stat-label">START DATE</span>
+          <span class="stat-value highlight-cyan">16 NOV 2026</span>
+        </div>
+      </div>
+      <div class="stat-pill">
+        <i data-lucide="target"></i>
+        <div>
+          <span class="stat-label">TARGET</span>
+          <span class="stat-value highlight-red">16 FEB 2027</span>
+        </div>
+      </div>
+      <div class="stat-pill">
+        <i data-lucide="clock"></i>
+        <div>
+          <span class="stat-label">DAILY SESSION</span>
+          <span class="stat-value highlight-green">30 MINS</span>
+        </div>
+      </div>
+      <div class="stat-pill">
+        <i data-lucide="git-branch"></i>
+        <div>
+          <span class="stat-label">GITHUB REPO</span>
+          <a href="https://github.com/Junaid-khan-i87/red-team-foundations" target="_blank" class="stat-link" id="repoLink">
+            red-team-foundations <i data-lucide="external-link" class="mini-icon"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" id="btnOpenTimerHeader">
+        <i data-lucide="timer"></i>
+        <span>Focus Timer</span>
+      </button>
+      <button class="btn btn-primary btn-sm" id="btnQuickNewNote">
+        <i data-lucide="plus-circle"></i>
+        <span>Write Note</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Navigation Tabs -->
+  <nav class="main-tabs-bar">
+    <button class="tab-btn active" data-tab="studio">
+      <i data-lucide="edit-3"></i>
+      <span>Note Studio & Git Push</span>
+    </button>
+    <button class="tab-btn" data-tab="roadmap">
+      <i data-lucide="map"></i>
+      <span>90-Day Roadmap (12 Weeks)</span>
+      <span class="tab-badge" id="roadmapProgressBadge">Day 1/90</span>
+    </button>
+    <button class="tab-btn" data-tab="timer">
+      <i data-lucide="hourglass"></i>
+      <span>30-Min Protocol Timer</span>
+    </button>
+    <button class="tab-btn" data-tab="explorer">
+      <i data-lucide="folder-git-2"></i>
+      <span>Repository Explorer</span>
+      <span class="tab-badge" id="notesCountBadge">0 Notes</span>
+    </button>
+    <button class="tab-btn" data-tab="arsenal">
+      <i data-lucide="shield-check"></i>
+      <span>Tool & Lab Arsenal</span>
+    </button>
+    <button class="tab-btn" data-tab="git-settings">
+      <i data-lucide="git-commit"></i>
+      <span>Git Sync & Status</span>
+    </button>
+  </nav>
+
+  <!-- Main App Content -->
+  <main class="app-main">
+
+    <!-- ==================== TAB 1: NOTE STUDIO & GIT PUSH ==================== -->
+    <section class="tab-pane active" id="pane-studio">
+      <div class="studio-layout">
+        <!-- Editor Controls Bar -->
+        <div class="studio-topbar">
+          <div class="editor-metadata-grid">
+            <div class="input-group">
+              <label><i data-lucide="compass"></i> Roadmap Day</label>
+              <select id="daySelect" class="form-control">
+                <!-- Populated dynamically via JS -->
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label><i data-lucide="folder"></i> Repo Module / Folder</label>
+              <select id="folderSelect" class="form-control">
+                <option value="01-networking">01-networking (Weeks 1-2)</option>
+                <option value="02-linux">02-linux (Weeks 3-4)</option>
+                <option value="03-windows">03-windows (Week 5)</option>
+                <option value="04-programming">04-programming (Week 6)</option>
+                <option value="05-web-security">05-web-security (Weeks 7, 8, 10)</option>
+                <option value="06-red-team">06-red-team (Weeks 9, 11)</option>
+                <option value="06-red-team/lab-reports">06-red-team/lab-reports (Week 12)</option>
+                <option value="daily-logs">daily-logs</option>
+              </select>
+            </div>
+
+            <div class="input-group flex-2">
+              <label><i data-lucide="file-code"></i> Markdown Filename</label>
+              <div class="input-prefix-wrap">
+                <span class="prefix-label" id="folderPrefixLabel">01-networking/</span>
+                <input type="text" id="filenameInput" class="form-control" placeholder="e.g. client-server.md" value="day-01-networking-fundamentals.md">
+              </div>
+            </div>
+
+            <div class="input-group flex-3">
+              <label><i data-lucide="type"></i> Note Title</label>
+              <input type="text" id="titleInput" class="form-control" placeholder="e.g. Client-Server Architecture & DNS" value="Client-Server Architecture, IP & MAC Addresses, DNS Intro">
+            </div>
+          </div>
+
+          <!-- Quick Templates & Actions -->
+          <div class="studio-actions-row">
+            <div class="action-buttons-left">
+              <button class="btn btn-outline btn-xs" id="btnLoad5Questions">
+                <i data-lucide="help-circle"></i> Load 5-Question Framework
+              </button>
+              <button class="btn btn-outline btn-xs" id="btnLoadDay1">
+                <i data-lucide="sparkles"></i> Load Day 1 Starter
+              </button>
+              <button class="btn btn-outline btn-xs" id="btnLoadLabTemplate">
+                <i data-lucide="file-text"></i> Load Lab Report Template
+              </button>
+              <button class="btn btn-outline btn-xs" id="btnClearEditor">
+                <i data-lucide="trash-2"></i> Clear
+              </button>
+            </div>
+
+            <div class="draft-status-wrap">
+              <span class="draft-indicator" id="draftStatus">
+                <i data-lucide="check-circle" class="status-icon"></i>
+                <span id="draftStatusText">Draft auto-saved locally</span>
+              </span>
+              <button class="btn btn-secondary btn-xs" id="btnOpenDraftsModal">
+                <i data-lucide="inbox"></i> Drafts (<span id="draftCountBadge">0</span>)
+              </button>
+              <button class="btn btn-secondary btn-xs" id="btnSaveDraftManual">
+                <i data-lucide="save"></i> Save Draft
+              </button>
+            </div>
+
+            <div class="view-toggles">
+              <button class="view-btn active" data-view="split" title="Split Screen">
+                <i data-lucide="columns"></i>
+              </button>
+              <button class="view-btn" data-view="edit" title="Editor Only">
+                <i data-lucide="edit"></i>
+              </button>
+              <button class="view-btn" data-view="preview" title="Preview Only">
+                <i data-lucide="eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Split Pane: Textarea & Live Markdown Preview -->
+        <div class="studio-panes-wrapper split-mode" id="panesWrapper">
+          <!-- Left: Editor Pane -->
+          <div class="editor-pane">
+            <div class="pane-header">
+              <div class="pane-label">
+                <i data-lucide="code-2"></i> MARKDOWN INPUT
+              </div>
+              <div class="editor-stats">
+                <span id="wordCountLabel">0 words</span>
+                <span class="dot-separator">•</span>
+                <span id="readingTimeLabel">1 min read</span>
+              </div>
+            </div>
+            <textarea id="markdownEditor" class="markdown-textarea" placeholder="Start typing your daily learning notes or paste your practice session notes here...
+
+Use the 5 Core Questions:
+1. What is it?
+2. How does it work?
+3. Why does a security professional need it?
+4. What did I practise?
+5. What did I learn from the exercise?"></textarea>
+          </div>
+
+          <!-- Right: Live Preview Pane -->
+          <div class="preview-pane">
+            <div class="pane-header">
+              <div class="pane-label">
+                <i data-lucide="eye"></i> LIVE PREVIEW (GITHUB FLAVORED)
+              </div>
+              <button class="btn-copy-preview" id="btnCopyMarkdown" title="Copy Raw Markdown">
+                <i data-lucide="copy"></i> Copy
+              </button>
+            </div>
+            <div id="markdownPreview" class="markdown-body">
+              <!-- Rendered via marked.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Action Bar / Push To GitHub -->
+        <div class="studio-bottom-bar">
+          <div class="bottom-commit-details">
+            <div class="input-group flex-1">
+              <label><i data-lucide="message-square"></i> Commit Message</label>
+              <input type="text" id="commitMsgInput" class="form-control form-control-sm" value="feat(notes): Day 01 - Computer & Networking Fundamentals">
+            </div>
+          </div>
+
+          <div class="bottom-actions-right">
+            <div class="shortcut-tip">
+              <span>Shortcut:</span> <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to Post
+            </div>
+            <button class="btn btn-success btn-lg" id="btnPostToGitHub">
+              <i data-lucide="rocket"></i>
+              <span>POST & COMMIT TO GITHUB</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: 90-DAY ROADMAP ==================== -->
+    <section class="tab-pane" id="pane-roadmap">
+      <div class="roadmap-container">
+        <!-- Roadmap Header & Progress Bar -->
+        <div class="roadmap-summary-card">
+          <div class="roadmap-summary-left">
+            <h2>90-Day Red Team Foundation Curriculum</h2>
+            <p>12 Weeks • 3 Phases • 30 Minutes Daily Protocol • Nov 16, 2026 to Feb 16, 2027</p>
+          </div>
+          <div class="roadmap-progress-box">
+            <div class="progress-info-row">
+              <span class="progress-label">Total Completion</span>
+              <span class="progress-percent" id="roadmapPercent">1%</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="roadmapProgressBar" style="width: 1.11%;"></div>
+            </div>
+            <div class="progress-sub-info">
+              <span id="completedCountText">1 of 90 Days Completed</span>
+              <span id="daysRemainingText">89 Days Remaining</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phase Tabs Filter -->
+        <div class="phase-filters">
+          <button class="phase-btn active" data-phase="all">All 90 Days</button>
+          <button class="phase-btn" data-phase="1">Month 1: Technical Foundations (Weeks 1-4)</button>
+          <button class="phase-btn" data-phase="2">Month 2: OS & Programming (Weeks 5-8)</button>
+          <button class="phase-btn" data-phase="3">Month 3: Red Team Methodology (Weeks 9-12)</button>
+        </div>
+
+        <!-- Weeks & Days Grid -->
+        <div class="weeks-accordion" id="weeksAccordionContainer">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: 30-MIN TIMER ==================== -->
+    <section class="tab-pane" id="pane-timer">
+      <div class="timer-container">
+        <div class="timer-card">
+          <div class="timer-header">
+            <div class="timer-badge">
+              <span class="pulsing-dot green"></span>
+              <span>DAILY 30-MINUTE SYSTEM</span>
+            </div>
+            <h2>Session Protocol Tracker</h2>
+            <p>"Every day, produce something: a command executed, a packet understood, a small script, or a written note."</p>
+          </div>
+
+          <!-- Phase Steps Indicator -->
+          <div class="timer-phases-grid">
+            <div class="timer-phase-box active" id="phaseBox1">
+              <div class="phase-step-num">PHASE 1 (0–5 MINS)</div>
+              <h4>Active Recall</h4>
+              <p>Recall yesterday's concepts without looking at your notes.</p>
+            </div>
+            <div class="timer-phase-box" id="phaseBox2">
+              <div class="phase-step-num">PHASE 2 (5–20 MINS)</div>
+              <h4>Deep Study</h4>
+              <p>Study 1 concept from documentation, course or lessons.</p>
+            </div>
+            <div class="timer-phase-box" id="phaseBox3">
+              <div class="phase-step-num">PHASE 3 (20–30 MINS)</div>
+              <h4>Active Practice</h4>
+              <p>Run commands, inspect packets, write notes, solve labs.</p>
+            </div>
+          </div>
+
+          <!-- Big Countdown Clock -->
+          <div class="timer-display-wrap">
+            <div class="timer-circle-wrap">
+              <svg class="timer-svg" viewBox="0 0 100 100">
+                <circle class="timer-circle-bg" cx="50" cy="50" r="45"></circle>
+                <circle class="timer-circle-progress" id="timerProgressCircle" cx="50" cy="50" r="45"></circle>
+              </svg>
+              <div class="timer-time-display">
+                <span class="timer-digits" id="timerDisplay">30:00</span>
+                <span class="timer-current-phase-label" id="timerCurrentPhaseName">Phase 1: Active Recall</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timer Controls -->
+          <div class="timer-controls">
+            <button class="btn btn-primary btn-lg" id="btnTimerToggle">
+              <i data-lucide="play" id="timerToggleIcon"></i>
+              <span id="timerToggleText">Start 30-Min Session</span>
+            </button>
+            <button class="btn btn-secondary btn-lg" id="btnTimerReset">
+              <i data-lucide="rotate-ccw"></i>
+              <span>Reset</span>
+            </button>
+            <button class="btn btn-outline btn-lg" id="btnTimerSoundTest">
+              <i data-lucide="volume-2"></i>
+              <span>Audio Cue</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: REPOSITORY EXPLORER ==================== -->
+    <section class="tab-pane" id="pane-explorer">
+      <div class="explorer-container">
+        <div class="explorer-header">
+          <div>
+            <h2>Committed Repository Notes</h2>
+            <p>Direct view of all markdown notes pushed to <a href="https://github.com/Junaid-khan-i87/red-team-foundations" target="_blank" class="cyber-link">Junaid-khan-i87/red-team-foundations</a></p>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btnRefreshNotes">
+            <i data-lucide="refresh-cw"></i> Refresh Notes
+          </button>
+        </div>
+
+        <div class="explorer-grid">
+          <!-- Left: Note List Filtered by Module -->
+          <div class="notes-list-col">
+            <div class="notes-filter-bar">
+              <input type="text" id="notesSearchInput" class="form-control" placeholder="Search notes by title or path...">
+            </div>
+            <div class="notes-tree" id="notesTreeContainer">
+              <!-- Populated dynamically via JS -->
+            </div>
+          </div>
+
+          <!-- Right: Note Viewer -->
+          <div class="note-viewer-col">
+            <div class="viewer-topbar" id="viewerTopbar">
+              <div class="viewer-meta">
+                <span class="viewer-path" id="viewerPath">Select a note to inspect</span>
+              </div>
+              <div class="viewer-actions" id="viewerActions" style="display: none;">
+                <button class="btn btn-secondary btn-xs" id="btnEditInStudio">
+                  <i data-lucide="edit-3"></i> Load into Studio
+                </button>
+                <a href="#" target="_blank" class="btn btn-outline btn-xs" id="btnOpenOnGitHub">
+                  <i data-lucide="external-link"></i> View on GitHub
+                </a>
+              </div>
+            </div>
+            <div class="viewer-content markdown-body" id="viewerContent">
+              <div class="empty-state">
+                <i data-lucide="file-text" class="empty-icon"></i>
+                <p>Select any note from the left to read its full rendered content or load it into the Studio to make additions and re-commit.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: ARSENAL ==================== -->
+    <section class="tab-pane" id="pane-arsenal">
+      <div class="arsenal-container">
+        <div class="arsenal-header">
+          <h2>Free & Open-Source Security Arsenal</h2>
+          <p>Curated learning resources, reference documentation, and practice wargames.</p>
+        </div>
+
+        <div class="arsenal-cards-grid">
+          <div class="arsenal-card">
+            <div class="card-icon-wrap green">
+              <i data-lucide="terminal"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-tag">OS & CLI</span>
+              <h3>Linux Journey</h3>
+              <p>Free structured path to master the Linux command line, filesystem hierarchy, and administration without relying on GUI.</p>
+              <a href="https://labex.io/linuxjourney" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="arsenal-card">
+            <div class="card-icon-wrap cyan">
+              <i data-lucide="activity"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-tag">Packet Analysis</span>
+              <h3>Wireshark</h3>
+              <p>The world's foremost network packet protocol analyzer. Essential for capturing DNS queries, TLS handshakes, and TCP streams.</p>
+              <a href="https://www.wireshark.org/docs/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="arsenal-card">
+            <div class="card-icon-wrap purple">
+              <i data-lucide="crosshair"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-tag">Wargames</span>
+              <h3>OverTheWire Bandit</h3>
+              <p>A fun, beginner-friendly gamified CTF wargame specifically engineered to teach Linux terminal commands and security essentials.</p>
+              <a href="https://overthewire.org/wargames/bandit/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="arsenal-card">
+            <div class="card-icon-wrap red">
+              <i data-lucide="globe"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-tag">Web Security</span>
+              <h3>PortSwigger Academy</h3>
+              <p>Free, interactive web security labs by the creators of Burp Suite. Learn SQL injection, XSS, and broken access controls.</p>
+              <a href="https://portswigger.net/web-security" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="arsenal-card">
+            <div class="card-icon-wrap orange">
+              <i data-lucide="box"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-tag">Capstone Target</span>
+              <h3>OWASP Juice Shop</h3>
+              <p>Deliberately vulnerable modern web application (Node.js/Angular/Express). The target for your Month 3 Capstone Security Assessment.</p>
+              <a href="https://owasp.org/www-project-juice-shop/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="arsenal-card">
+            <div class="card-icon-wrap blue">
+              <i data-lucide="network"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-tag">Networking</span>
+              <h3>Cisco Networking Academy</h3>
+              <p>Industry-standard introductory courses on computer networking, TCP/IP, routing, switching, and cybersecurity foundations.</p>
+              <a href="https://www.netacad.com/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="arsenal-card">
+            <div class="card-icon-wrap yellow">
+              <i data-lucide="shield-alert"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-tag">Adversary TTPs</span>
+              <h3>MITRE ATT&CK®</h3>
+              <p>Global curated knowledge base of real-world adversary tactics, techniques, and common knowledge used by Red and Blue teams.</p>
+              <a href="https://attack.mitre.org/resources/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+
+          <div class="arsenal-card">
+            <div class="card-icon-wrap pink">
+              <i data-lucide="book-open"></i>
+            </div>
+            <div class="card-content">
+              <span class="card-tag">Standard</span>
+              <h3>NIST SP 800-115</h3>
+              <p>Technical Guide to Information Security Testing and Assessment. Learn professional scoping, planning, and reporting standards.</p>
+              <a href="https://csrc.nist.gov/pubs/sp/800/115/final" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 6: GIT SETTINGS & STATUS ==================== -->
+    <section class="tab-pane" id="pane-git-settings">
+      <div class="git-status-container">
+        <div class="status-card">
+          <h2>Git & Repository Connection Status</h2>
+          <p>Real-time telemetry of your local workspace and remote GitHub synchronization.</p>
+
+          <div class="status-grid">
+            <div class="status-item">
+              <span class="status-item-label">Account / Operator</span>
+              <span class="status-item-value highlight-cyan">@Junaid-khan-i87</span>
+            </div>
+            <div class="status-item">
+              <span class="status-item-label">Target Repository</span>
+              <span class="status-item-value highlight-green">red-team-foundations</span>
+            </div>
+            <div class="status-item">
+              <span class="status-item-label">Active Branch</span>
+              <span class="status-item-value" id="gitBranchVal">main</span>
+            </div>
+            <div class="status-item">
+              <span class="status-item-label">Git Push Mechanism</span>
+              <span class="status-item-value highlight-yellow">Native Git CLI + gh Credential Engine</span>
+            </div>
+          </div>
+
+          <div class="recent-commits-block">
+            <h3>Recent Commits in Repository</h3>
+            <div class="commits-list" id="commitsList">
+              <!-- Populated via API -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== DRAFTS MODAL DRAWER ==================== -->
+  <div class="modal-overlay" id="draftsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="folder-clock"></i>
+          <h3>Saved Note Drafts</h3>
+        </div>
+        <button class="modal-close" id="btnCloseDraftsModal">&times;</button>
+      </div>
+      <div class="modal-body" id="draftsListContainer">
+        <!-- Populated via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SUCCESS CELEBRATION MODAL ==================== -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-card modal-success">
+      <div class="success-icon-wrap">
+        <i data-lucide="check-circle" class="big-success-icon"></i>
+      </div>
+      <h3 class="success-title">Note Successfully Committed & Pushed!</h3>
+      <p class="success-desc" id="successDesc">Your daily note has been safely committed to git and pushed to GitHub.</p>
+
+      <div class="success-links-box">
+        <div class="link-item">
+          <span class="link-label">File in Repository:</span>
+          <a href="#" target="_blank" id="successFileLink" class="cyber-link">...</a>
+        </div>
+        <div class="link-item">
+          <span class="link-label">Commit Hash:</span>
+          <a href="#" target="_blank" id="successCommitLink" class="cyber-link">...</a>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="btnCloseSuccessModal">Continue Learning</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
