@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Red Team Foundations // 90-Day Command Center & Journal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Red Team Foundations • 90-Day Learning Journal</title>
   
-  <!-- Fonts -->
+  <!-- Modern Clean Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
   <!-- Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -23,26 +23,35 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Ambient Background -->
-  <div class="cyber-grid"></div>
-  <div class="cyber-glow glow-top"></div>
-  <div class="cyber-glow glow-bottom"></div>
-
   <!-- Toast Notification Container -->
-  <div class="toast-container" id="toastContainer"></div>
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-  <!-- Sleek Top Navigation Bar (Merged Header + Tabs) -->
+  <!-- Sleek Top Navigation Bar -->
   <header class="top-nav">
-    <div class="nav-brand">
-      <div class="brand-badge">
-        <span class="pulsing-dot"></span>
-        <span class="brand-code">RED TEAM</span>
+    <div class="top-nav-main">
+      <div class="nav-brand">
+        <div class="brand-badge">
+          <span class="status-dot"></span>
+          <span class="brand-code">RED TEAM</span>
+        </div>
+        <span class="brand-title">Foundations <span class="brand-sub">Journal</span></span>
       </div>
-      <h1 class="brand-title">FOUNDATION <span>ROADMAP</span></h1>
+
+      <div class="header-actions">
+        <span class="streak-pill" id="streakVal" title="Daily Learning Streak">🔥 1 Day</span>
+        <button class="btn btn-secondary btn-sm" id="btnOpenCheatsheet" title="Command & Syntax Snippets">
+          <i data-lucide="terminal"></i>
+          <span class="hide-on-mobile">Snippets</span>
+        </button>
+        <button class="btn btn-primary btn-sm" id="btnQuickNewNote">
+          <i data-lucide="plus"></i>
+          <span>New Note</span>
+        </button>
+      </div>
     </div>
 
     <!-- Centered Clean Tab Navigation -->
-    <nav class="main-tabs-bar">
+    <nav class="main-tabs-bar" aria-label="Main Navigation">
       <button class="tab-btn active" data-tab="studio">
         <i data-lucide="edit-3"></i>
         <span>Studio</span>
@@ -53,8 +62,8 @@
         <span class="tab-badge" id="roadmapProgressBadge">Day 1/90</span>
       </button>
       <button class="tab-btn" data-tab="timer">
-        <i data-lucide="hourglass"></i>
-        <span>Timer</span>
+        <i data-lucide="clock"></i>
+        <span>Protocol Timer</span>
       </button>
       <button class="tab-btn" data-tab="explorer">
         <i data-lucide="folder-git-2"></i>
@@ -67,22 +76,9 @@
       </button>
       <button class="tab-btn" data-tab="git-settings">
         <i data-lucide="git-commit"></i>
-        <span>Git Status</span>
+        <span>Sync Status</span>
       </button>
     </nav>
-
-    <!-- Header Actions -->
-    <div class="header-actions">
-      <span class="stat-pill-mini highlight-yellow" id="streakVal">🔥 1 DAY</span>
-      <button class="btn btn-secondary btn-sm" id="btnOpenCheatsheet">
-        <i data-lucide="zap"></i>
-        <span>Snippets</span>
-      </button>
-      <button class="btn btn-primary btn-sm" id="btnQuickNewNote">
-        <i data-lucide="plus"></i>
-        <span>New Note</span>
-      </button>
-    </div>
   </header>
 
   <!-- Main App Content -->
@@ -91,20 +87,18 @@
     <!-- ==================== TAB 1: NOTE STUDIO & GIT PUSH ==================== -->
     <section class="tab-pane active" id="pane-studio">
       <div class="studio-layout" id="studioContainer">
-        <!-- Compact Clean Studio Topbar -->
+        <!-- Compact Studio Topbar -->
         <div class="studio-topbar">
-          <!-- Row 1: Target Metadata -->
-          <div class="editor-metadata-grid">
-            <div class="input-group">
-              <label>Day:</label>
-              <select id="daySelect" class="form-control" style="width: 170px;">
-                <!-- Populated dynamically via JS -->
-              </select>
+          <!-- Row 1: Target Metadata Grid -->
+          <div class="metadata-grid">
+            <div class="meta-field day-field">
+              <label for="daySelect">Day</label>
+              <select id="daySelect" class="form-control"></select>
             </div>
 
-            <div class="input-group">
-              <label>Folder:</label>
-              <select id="folderSelect" class="form-control" style="width: 180px;">
+            <div class="meta-field folder-field">
+              <label for="folderSelect">Module</label>
+              <select id="folderSelect" class="form-control">
                 <option value="01-networking">01-networking</option>
                 <option value="02-linux">02-linux</option>
                 <option value="03-windows">03-windows</option>
@@ -116,97 +110,95 @@
               </select>
             </div>
 
-            <div class="input-group flex-2">
-              <label>File:</label>
-              <div class="input-prefix-wrap" style="width: 100%;">
-                <span class="prefix-label" id="folderPrefixLabel">01-networking/</span>
+            <div class="meta-field filename-field">
+              <label for="filenameInput">File Name</label>
+              <div class="path-input-wrap">
+                <span class="path-prefix" id="folderPrefixLabel">01-networking/</span>
                 <input type="text" id="filenameInput" class="form-control" placeholder="filename.md" value="day-01-networking-fundamentals.md">
               </div>
             </div>
 
-            <div class="input-group flex-3">
-              <label>Title:</label>
-              <input type="text" id="titleInput" class="form-control" style="width: 100%;" placeholder="Topic Title..." value="Client-Server Architecture, IP & MAC Addresses, DNS Intro">
+            <div class="meta-field title-field">
+              <label for="titleInput">Topic Title</label>
+              <input type="text" id="titleInput" class="form-control" placeholder="Topic Title..." value="Client-Server Architecture, IP & MAC Addresses, DNS Intro">
             </div>
           </div>
 
-          <!-- Row 2: Templates & Formatting Tools -->
-          <div class="studio-actions-row">
-            <div class="action-buttons-left">
-              <button class="btn btn-outline btn-xs" id="btnLoad5Questions">
-                <i data-lucide="help-circle"></i> 5-Questions
+          <!-- Row 2: Action Bar (Templates, Toolbar, View Toggles) -->
+          <div class="studio-action-row">
+            <div class="quick-templates-bar">
+              <button class="btn btn-ghost btn-xs" id="btnLoad5Questions" title="Load 5 Core Questions Template">
+                <i data-lucide="help-circle"></i> <span>5 Questions</span>
               </button>
-              <button class="btn btn-outline btn-xs" id="btnLoadDay1">
-                <i data-lucide="sparkles"></i> Day 1 Kickoff
+              <button class="btn btn-ghost btn-xs" id="btnLoadDay1" title="Load Day 1 Kickoff Note">
+                <i data-lucide="sparkles"></i> <span>Kickoff Note</span>
               </button>
-              <button class="btn btn-outline btn-xs" id="btnLoadLabTemplate">
-                <i data-lucide="file-text"></i> Lab Template
+              <button class="btn btn-ghost btn-xs" id="btnLoadLabTemplate" title="Load Lab Assessment Report">
+                <i data-lucide="file-text"></i> <span>Lab Report</span>
               </button>
-              <button class="btn btn-outline btn-xs" id="btnOpenSnippetsBar">
-                <i data-lucide="code"></i> Snippet
+              <button class="btn btn-ghost btn-xs" id="btnOpenSnippetsBar" title="Open Code Snippets">
+                <i data-lucide="code"></i> <span>Snippets</span>
               </button>
-
-              <div class="toolbar-separator" style="height: 16px; margin: 0 4px;"></div>
-
-              <!-- Inline Quick Formatting Buttons -->
-              <div class="md-format-toolbar" style="padding: 2px 4px;">
-                <button type="button" class="toolbar-btn" data-format="bold" title="Bold (Ctrl+B)"><i data-lucide="bold"></i></button>
-                <button type="button" class="toolbar-btn" data-format="italic" title="Italic (Ctrl+I)"><i data-lucide="italic"></i></button>
-                <button type="button" class="toolbar-btn" data-format="h2" title="H2 Heading">H2</button>
-                <button type="button" class="toolbar-btn" data-format="inline-code" title="Inline Code"><i data-lucide="code-2"></i></button>
-                <button type="button" class="toolbar-btn" data-format="code-bash" title="Bash Block"><code>&gt;_ bash</code></button>
-                <button type="button" class="toolbar-btn" data-format="bullet-list" title="Bullet List"><i data-lucide="list"></i></button>
-                <button type="button" class="toolbar-btn" data-format="task-list" title="Task Checkbox"><i data-lucide="check-square"></i></button>
-                <button type="button" class="toolbar-btn" data-format="table" title="Table"><i data-lucide="table"></i></button>
-              </div>
             </div>
 
-            <div class="draft-status-wrap">
-              <span class="draft-indicator" id="draftStatus">
+            <div class="md-format-toolbar" role="toolbar" aria-label="Markdown formatting">
+              <button type="button" class="tool-btn" data-format="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+              <button type="button" class="tool-btn" data-format="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+              <button type="button" class="tool-btn" data-format="h2" title="Heading 2">H2</button>
+              <button type="button" class="tool-btn" data-format="inline-code" title="Inline Code"><code>`code`</code></button>
+              <button type="button" class="tool-btn" data-format="code-bash" title="Bash Command Block"><code>&gt;_ bash</code></button>
+              <button type="button" class="tool-btn" data-format="bullet-list" title="Bullet List"><i data-lucide="list"></i></button>
+              <button type="button" class="tool-btn" data-format="task-list" title="Task Checkbox"><i data-lucide="check-square"></i></button>
+              <button type="button" class="tool-btn" data-format="table" title="Table"><i data-lucide="table"></i></button>
+            </div>
+
+            <div class="studio-right-tools">
+              <div class="save-status-pill" id="draftStatus">
                 <i data-lucide="check-circle" class="status-icon"></i>
                 <span id="draftStatusText">Auto-saved</span>
-              </span>
-              <button class="btn btn-secondary btn-xs" id="btnOpenDraftsModal">
-                <i data-lucide="inbox"></i> Drafts (<span id="draftCountBadge">0</span>)
+              </div>
+              <button class="btn btn-ghost btn-xs" id="btnOpenDraftsModal" title="View Saved Drafts">
+                <i data-lucide="inbox"></i> <span>Drafts (<span id="draftCountBadge">0</span>)</span>
               </button>
-              <button class="btn btn-secondary btn-xs" id="btnSaveDraftManual">
-                <i data-lucide="save"></i> Save Draft
+              <button class="btn btn-ghost btn-xs" id="btnSaveDraftManual" title="Save Draft (Ctrl+S)">
+                <i data-lucide="save"></i> <span>Save</span>
               </button>
-              <button class="btn btn-outline btn-xs" id="btnClearEditor" title="Clear Editor">
+              <button class="btn btn-ghost btn-xs" id="btnClearEditor" title="Clear Editor">
                 <i data-lucide="trash-2"></i>
               </button>
 
-              <div class="view-toggles">
-                <button class="view-btn" id="btnToggleZen" title="Fullscreen (Esc to exit)">
-                  <i data-lucide="maximize-2"></i>
-                </button>
+              <div class="view-switch-pills">
                 <button class="view-btn active" data-view="split" title="Split Screen">
-                  <i data-lucide="columns"></i>
+                  <i data-lucide="columns"></i> <span>Split</span>
                 </button>
                 <button class="view-btn" data-view="edit" title="Editor Only">
-                  <i data-lucide="edit"></i>
+                  <i data-lucide="edit-3"></i> <span>Write</span>
                 </button>
                 <button class="view-btn" data-view="preview" title="Preview Only">
-                  <i data-lucide="eye"></i>
+                  <i data-lucide="eye"></i> <span>Preview</span>
+                </button>
+                <button class="view-btn" id="btnToggleZen" title="Zen Fullscreen (Esc to exit)">
+                  <i data-lucide="maximize-2"></i>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Split Pane: Textarea & Live Markdown Preview -->
+        <!-- Split Panes Wrapper -->
         <div class="studio-panes-wrapper split-mode" id="panesWrapper">
           <!-- Left: Editor Pane -->
           <div class="editor-pane">
             <div class="pane-header">
-              <div class="pane-label">
-                <i data-lucide="code-2"></i> MARKDOWN INPUT
+              <div class="pane-title">
+                <i data-lucide="edit-3"></i>
+                <span>Markdown Source</span>
               </div>
               <div class="editor-stats">
                 <span id="wordCountLabel">0 words</span>
-                <span class="dot-separator">•</span>
+                <span class="sep">•</span>
                 <span id="charCountLabel">0 chars</span>
-                <span class="dot-separator">•</span>
+                <span class="sep">•</span>
                 <span id="readingTimeLabel">1 min read</span>
               </div>
             </div>
@@ -223,15 +215,16 @@ Use the 5 Core Questions:
           <!-- Right: Live Preview Pane -->
           <div class="preview-pane">
             <div class="pane-header">
-              <div class="pane-label">
-                <i data-lucide="eye"></i> LIVE PREVIEW (SYNTAX HIGHLIGHTED)
+              <div class="pane-title">
+                <i data-lucide="eye"></i>
+                <span>Live Preview</span>
               </div>
-              <div style="display: flex; gap: 6px;">
-                <button class="btn-copy-preview" id="btnDownloadMarkdown" title="Download Markdown File">
-                  <i data-lucide="download"></i> Download .md
+              <div class="pane-actions">
+                <button class="btn btn-ghost btn-xs" id="btnDownloadMarkdown" title="Download Markdown File">
+                  <i data-lucide="download"></i> <span>Download .md</span>
                 </button>
-                <button class="btn-copy-preview" id="btnCopyMarkdown" title="Copy Raw Markdown">
-                  <i data-lucide="copy"></i> Copy
+                <button class="btn btn-ghost btn-xs" id="btnCopyMarkdown" title="Copy Raw Markdown">
+                  <i data-lucide="copy"></i> <span>Copy</span>
                 </button>
               </div>
             </div>
@@ -241,22 +234,22 @@ Use the 5 Core Questions:
           </div>
         </div>
 
-        <!-- Bottom Action Bar / Push To GitHub -->
+        <!-- Bottom Commit Bar -->
         <div class="studio-bottom-bar">
-          <div class="bottom-commit-details">
-            <div class="input-group flex-1">
-              <label>Commit Message:</label>
-              <input type="text" id="commitMsgInput" class="form-control" style="width: 100%;" value="feat(notes): Day 01 - Computer & Networking Fundamentals">
-            </div>
+          <div class="commit-input-wrap">
+            <label for="commitMsgInput" class="commit-label">
+              <i data-lucide="git-commit"></i>
+              <span>Commit:</span>
+            </label>
+            <input type="text" id="commitMsgInput" class="form-control" placeholder="Commit message (e.g. feat(notes): Day 01 - Networking)" value="feat(notes): Day 01 - Computer & Networking Fundamentals">
           </div>
-
-          <div class="bottom-actions-right">
-            <div class="shortcut-tip">
+          <div class="commit-actions-wrap">
+            <div class="keyboard-tip hide-on-mobile">
               <span>Shortcut:</span> <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
             </div>
-            <button class="btn btn-success btn-lg" id="btnPostToGitHub">
-              <i data-lucide="rocket"></i>
-              <span>POST & COMMIT TO GITHUB</span>
+            <button class="btn btn-primary btn-commit" id="btnPostToGitHub">
+              <i data-lucide="arrow-up-circle"></i>
+              <span>Publish to GitHub</span>
             </button>
           </div>
         </div>
@@ -265,14 +258,14 @@ Use the 5 Core Questions:
 
     <!-- ==================== TAB 2: 90-DAY ROADMAP ==================== -->
     <section class="tab-pane" id="pane-roadmap">
-      <div class="roadmap-container">
+      <div class="content-container">
         <!-- Roadmap Header & Progress Bar -->
-        <div class="roadmap-summary-card">
-          <div class="roadmap-summary-left">
+        <div class="card summary-card">
+          <div class="summary-card-text">
             <h2>90-Day Red Team Foundation Curriculum</h2>
             <p>12 Weeks • 3 Phases • 30 Minutes Daily Protocol • Nov 16, 2026 to Feb 16, 2027</p>
           </div>
-          <div class="roadmap-progress-box">
+          <div class="summary-card-progress">
             <div class="progress-info-row">
               <span class="progress-label">Total Completion</span>
               <span class="progress-percent" id="roadmapPercent">1%</span>
@@ -288,14 +281,14 @@ Use the 5 Core Questions:
         </div>
 
         <!-- Interactive 90-Day Visual Grid / Punch Card -->
-        <div class="visual-matrix-card">
-          <div class="matrix-header">
-            <div class="matrix-title">
+        <div class="card matrix-card">
+          <div class="card-header-row">
+            <div class="card-title">
               <i data-lucide="grid"></i>
-              <h3>90-Day Visual Punch Card & Habit Tracker</h3>
+              <h3>90-Day Visual Habit Matrix</h3>
             </div>
             <div class="matrix-legend">
-              <span class="legend-item"><span class="legend-box done"></span> Completed</span>
+              <span class="legend-item"><span class="legend-box done"></span> Done</span>
               <span class="legend-item"><span class="legend-box current"></span> Active / Today</span>
               <span class="legend-item"><span class="legend-box pending"></span> Upcoming</span>
             </div>
@@ -322,30 +315,32 @@ Use the 5 Core Questions:
 
     <!-- ==================== TAB 3: 30-MIN TIMER ==================== -->
     <section class="tab-pane" id="pane-timer">
-      <div class="timer-container">
-        <div class="timer-card">
-          <div class="timer-badge">
-            <span class="pulsing-dot green"></span>
-            <span>DAILY 30-MINUTE SYSTEM</span>
+      <div class="content-container">
+        <div class="card timer-card">
+          <div class="timer-header">
+            <div class="timer-badge">
+              <span class="status-dot"></span>
+              <span>Daily 30-Minute Protocol</span>
+            </div>
+            <h2>Focused Study Session</h2>
+            <p class="timer-quote">"Every day, produce something: a command executed, a packet understood, a small script, or a written note."</p>
           </div>
-          <h2>Session Protocol Tracker</h2>
-          <p>"Every day, produce something: a command executed, a packet understood, a small script, or a written note."</p>
 
           <!-- Phase Steps Indicator -->
           <div class="timer-phases-grid">
             <div class="timer-phase-box active" id="phaseBox1">
-              <div class="phase-step-num">PHASE 1 (0–5 MINS)</div>
+              <div class="phase-step-tag">Phase 1 • 0–5 min</div>
               <h4>Active Recall</h4>
               <p>Recall yesterday's concepts without looking at your notes.</p>
             </div>
             <div class="timer-phase-box" id="phaseBox2">
-              <div class="phase-step-num">PHASE 2 (5–20 MINS)</div>
+              <div class="phase-step-tag">Phase 2 • 5–20 min</div>
               <h4>Deep Study</h4>
-              <p>Study 1 concept from documentation, course or lessons.</p>
+              <p>Study 1 concept from documentation, courses, or labs.</p>
             </div>
             <div class="timer-phase-box" id="phaseBox3">
-              <div class="phase-step-num">PHASE 3 (20–30 MINS)</div>
-              <h4>Active Practice</h4>
+              <div class="phase-step-tag">Phase 3 • 20–30 min</div>
+              <h4>Hands-On Practice</h4>
               <p>Run commands, inspect packets, write notes, solve labs.</p>
             </div>
           </div>
@@ -368,14 +363,14 @@ Use the 5 Core Questions:
           <div class="ambient-audio-strip">
             <div class="ambient-info">
               <i data-lucide="headphones"></i>
-              <span>Focus Ambient Drone (Synthesized White/Brown Noise)</span>
+              <span>Focus Ambient Sound (Synthesized Brown Noise)</span>
             </div>
             <div class="ambient-controls">
-              <button class="btn btn-outline btn-xs" id="btnToggleAmbient">
+              <button class="btn btn-secondary btn-xs" id="btnToggleAmbient">
                 <i data-lucide="volume-x" id="ambientIcon"></i>
                 <span id="ambientText">Turn On Ambient</span>
               </button>
-              <input type="range" id="ambientVolume" min="0" max="1" step="0.05" value="0.25" class="volume-slider">
+              <input type="range" id="ambientVolume" min="0" max="1" step="0.05" value="0.25" class="volume-slider" aria-label="Ambient volume">
             </div>
           </div>
 
@@ -389,7 +384,7 @@ Use the 5 Core Questions:
               <i data-lucide="rotate-ccw"></i>
               <span>Reset</span>
             </button>
-            <button class="btn btn-outline btn-lg" id="btnTimerSoundTest">
+            <button class="btn btn-ghost btn-lg" id="btnTimerSoundTest">
               <i data-lucide="volume-2"></i>
               <span>Test Audio</span>
             </button>
@@ -400,48 +395,42 @@ Use the 5 Core Questions:
 
     <!-- ==================== TAB 4: REPOSITORY EXPLORER ==================== -->
     <section class="tab-pane" id="pane-explorer">
-      <div class="explorer-container">
-        <div class="explorer-header">
-          <div>
-            <h2>Committed Repository Notes</h2>
-            <p>Direct view of all markdown notes pushed to <a href="https://github.com/Junaid-khan-i87/red-team-foundations" target="_blank" class="cyber-link">Junaid-khan-i87/red-team-foundations</a></p>
+      <div class="explorer-layout">
+        <!-- Sidebar: Note List -->
+        <aside class="explorer-sidebar">
+          <div class="explorer-sidebar-header">
+            <h3>Notes Explorer</h3>
+            <button class="btn btn-ghost btn-xs" id="btnRefreshNotes" title="Refresh Notes List">
+              <i data-lucide="refresh-cw"></i>
+            </button>
           </div>
-          <button class="btn btn-secondary btn-sm" id="btnRefreshNotes">
-            <i data-lucide="refresh-cw"></i> Refresh Notes
-          </button>
-        </div>
+          <div class="notes-filter-bar">
+            <input type="text" id="notesSearchInput" class="form-control" placeholder="Search notes...">
+          </div>
+          <div class="notes-tree" id="notesTreeContainer">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </aside>
 
-        <div class="explorer-grid">
-          <!-- Left: Note List Filtered by Module -->
-          <div class="notes-list-col">
-            <div class="notes-filter-bar">
-              <input type="text" id="notesSearchInput" class="form-control" style="width: 100%;" placeholder="Search notes...">
+        <!-- Main Viewer -->
+        <div class="explorer-viewer">
+          <div class="viewer-topbar" id="viewerTopbar">
+            <div class="viewer-meta">
+              <span class="viewer-path" id="viewerPath">Select a note to inspect</span>
             </div>
-            <div class="notes-tree" id="notesTreeContainer">
-              <!-- Populated dynamically via JS -->
+            <div class="viewer-actions" id="viewerActions" style="display: none;">
+              <button class="btn btn-secondary btn-xs" id="btnEditInStudio">
+                <i data-lucide="edit-3"></i> <span>Edit in Studio</span>
+              </button>
+              <a href="#" target="_blank" class="btn btn-ghost btn-xs" id="btnOpenOnGitHub">
+                <i data-lucide="external-link"></i> <span>View on GitHub</span>
+              </a>
             </div>
           </div>
-
-          <!-- Right: Note Viewer -->
-          <div class="note-viewer-col">
-            <div class="viewer-topbar" id="viewerTopbar">
-              <div class="viewer-meta">
-                <span class="viewer-path" id="viewerPath">Select a note to inspect</span>
-              </div>
-              <div class="viewer-actions" id="viewerActions" style="display: none;">
-                <button class="btn btn-secondary btn-xs" id="btnEditInStudio">
-                  <i data-lucide="edit-3"></i> Load into Studio
-                </button>
-                <a href="#" target="_blank" class="btn btn-outline btn-xs" id="btnOpenOnGitHub">
-                  <i data-lucide="external-link"></i> View on GitHub
-                </a>
-              </div>
-            </div>
-            <div class="viewer-content markdown-body" id="viewerContent">
-              <div class="empty-state">
-                <i data-lucide="file-text" class="empty-icon"></i>
-                <p>Select any note from the left to read its full rendered content or load it into the Studio to make additions and re-commit.</p>
-              </div>
+          <div class="viewer-content markdown-body" id="viewerContent">
+            <div class="empty-state">
+              <i data-lucide="file-text" class="empty-icon"></i>
+              <p>Select any note from the left to read its full rendered content or load it into the Studio to make additions and re-commit.</p>
             </div>
           </div>
         </div>
@@ -450,90 +439,90 @@ Use the 5 Core Questions:
 
     <!-- ==================== TAB 5: ARSENAL ==================== -->
     <section class="tab-pane" id="pane-arsenal">
-      <div class="arsenal-container">
-        <div class="arsenal-header">
+      <div class="content-container">
+        <div class="section-heading">
           <h2>Free & Open-Source Security Arsenal</h2>
           <p>Curated learning resources, reference documentation, and practice wargames.</p>
         </div>
 
         <div class="arsenal-cards-grid">
-          <div class="arsenal-card">
+          <div class="card arsenal-card">
             <div class="card-icon-wrap green"><i data-lucide="terminal"></i></div>
             <div class="card-content">
               <span class="card-tag">OS & CLI</span>
               <h3>Linux Journey</h3>
-              <p>Free structured path to master the Linux command line, filesystem hierarchy, and administration without relying on GUI.</p>
-              <a href="https://labex.io/linuxjourney" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+              <p>Structured path to master the Linux command line, filesystem hierarchy, and administration without relying on a GUI.</p>
+              <a href="https://labex.io/linuxjourney" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
             </div>
           </div>
 
-          <div class="arsenal-card">
+          <div class="card arsenal-card">
             <div class="card-icon-wrap cyan"><i data-lucide="activity"></i></div>
             <div class="card-content">
               <span class="card-tag">Packet Analysis</span>
               <h3>Wireshark</h3>
               <p>The world's foremost network packet protocol analyzer. Essential for capturing DNS queries, TLS handshakes, and TCP streams.</p>
-              <a href="https://www.wireshark.org/docs/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+              <a href="https://www.wireshark.org/docs/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
             </div>
           </div>
 
-          <div class="arsenal-card">
+          <div class="card arsenal-card">
             <div class="card-icon-wrap purple"><i data-lucide="crosshair"></i></div>
             <div class="card-content">
               <span class="card-tag">Wargames</span>
               <h3>OverTheWire Bandit</h3>
               <p>A fun, beginner-friendly gamified CTF wargame specifically engineered to teach Linux terminal commands and security essentials.</p>
-              <a href="https://overthewire.org/wargames/bandit/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+              <a href="https://overthewire.org/wargames/bandit/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
             </div>
           </div>
 
-          <div class="arsenal-card">
+          <div class="card arsenal-card">
             <div class="card-icon-wrap red"><i data-lucide="globe"></i></div>
             <div class="card-content">
               <span class="card-tag">Web Security</span>
               <h3>PortSwigger Academy</h3>
               <p>Free, interactive web security labs by the creators of Burp Suite. Learn SQL injection, XSS, and broken access controls.</p>
-              <a href="https://portswigger.net/web-security" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+              <a href="https://portswigger.net/web-security" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
             </div>
           </div>
 
-          <div class="arsenal-card">
+          <div class="card arsenal-card">
             <div class="card-icon-wrap orange"><i data-lucide="box"></i></div>
             <div class="card-content">
               <span class="card-tag">Capstone Target</span>
               <h3>OWASP Juice Shop</h3>
               <p>Deliberately vulnerable modern web application (Node.js/Angular/Express). The target for your Month 3 Capstone Security Assessment.</p>
-              <a href="https://owasp.org/www-project-juice-shop/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+              <a href="https://owasp.org/www-project-juice-shop/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
             </div>
           </div>
 
-          <div class="arsenal-card">
+          <div class="card arsenal-card">
             <div class="card-icon-wrap blue"><i data-lucide="network"></i></div>
             <div class="card-content">
               <span class="card-tag">Networking</span>
               <h3>Cisco Networking Academy</h3>
               <p>Industry-standard introductory courses on computer networking, TCP/IP, routing, switching, and cybersecurity foundations.</p>
-              <a href="https://www.netacad.com/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+              <a href="https://www.netacad.com/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
             </div>
           </div>
 
-          <div class="arsenal-card">
+          <div class="card arsenal-card">
             <div class="card-icon-wrap yellow"><i data-lucide="shield-alert"></i></div>
             <div class="card-content">
               <span class="card-tag">Adversary TTPs</span>
               <h3>MITRE ATT&CK®</h3>
               <p>Global curated knowledge base of real-world adversary tactics, techniques, and common knowledge used by Red and Blue teams.</p>
-              <a href="https://attack.mitre.org/resources/" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+              <a href="https://attack.mitre.org/resources/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
             </div>
           </div>
 
-          <div class="arsenal-card">
+          <div class="card arsenal-card">
             <div class="card-icon-wrap pink"><i data-lucide="book-open"></i></div>
             <div class="card-content">
               <span class="card-tag">Standard</span>
               <h3>NIST SP 800-115</h3>
               <p>Technical Guide to Information Security Testing and Assessment. Learn professional scoping, planning, and reporting standards.</p>
-              <a href="https://csrc.nist.gov/pubs/sp/800/115/final" target="_blank" class="btn btn-outline btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
+              <a href="https://csrc.nist.gov/pubs/sp/800/115/final" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">Launch Resource <i data-lucide="external-link"></i></a>
             </div>
           </div>
         </div>
@@ -542,10 +531,10 @@ Use the 5 Core Questions:
 
     <!-- ==================== TAB 6: GIT SETTINGS & STATUS ==================== -->
     <section class="tab-pane" id="pane-git-settings">
-      <div class="git-status-container">
-        <div class="status-card">
-          <h2>Git & Repository Connection Status</h2>
-          <p>Real-time telemetry of your local workspace and remote GitHub synchronization.</p>
+      <div class="content-container">
+        <div class="card status-card">
+          <h2>Git & Repository Synchronization</h2>
+          <p>Real-time status of your local workspace and remote GitHub synchronization.</p>
 
           <div class="status-grid">
             <div class="status-item">
@@ -567,7 +556,7 @@ Use the 5 Core Questions:
           </div>
 
           <div class="recent-commits-block">
-            <h3>Recent Commits in Repository</h3>
+            <h3>Recent Commits</h3>
             <div class="commits-list" id="commitsList">
               <!-- Populated via API -->
             </div>
@@ -583,9 +572,9 @@ Use the 5 Core Questions:
       <div class="modal-header">
         <div class="modal-title">
           <i data-lucide="terminal"></i>
-          <h3>Red Team Quick Snippet & Command Library</h3>
+          <h3>Quick Snippet & Command Library</h3>
         </div>
-        <button class="modal-close" id="btnCloseCheatsheetModal">&times;</button>
+        <button class="modal-close" id="btnCloseCheatsheetModal" aria-label="Close modal">&times;</button>
       </div>
       <div class="modal-body">
         <div class="snippets-grid">
@@ -595,22 +584,22 @@ Use the 5 Core Questions:
             <div class="snippet-item">
               <div class="snippet-code">dig domain.com +noall +answer</div>
               <p>Resolve DNS A record concisely.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('dig domain.com +noall +answer')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('dig domain.com +noall +answer')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">dig axfr @ns1.domain.com domain.com</div>
               <p>Attempt unrestricted DNS Zone Transfer.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('dig axfr @ns1.domain.com domain.com')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('dig axfr @ns1.domain.com domain.com')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">sudo tcpdump -i any -nn -c 10 port 53</div>
               <p>Live capture 10 DNS packets on any interface.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('sudo tcpdump -i any -nn -c 10 port 53')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('sudo tcpdump -i any -nn -c 10 port 53')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">nc -zv 192.168.1.1 22 80 443</div>
               <p>Fast banner check across ports.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('nc -zv 192.168.1.1 22 80 443')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('nc -zv 192.168.1.1 22 80 443')">Insert</button>
             </div>
           </div>
 
@@ -620,22 +609,22 @@ Use the 5 Core Questions:
             <div class="snippet-item">
               <div class="snippet-code">find / -perm -4000 -type f 2>/dev/null</div>
               <p>Find all SUID binaries on system.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('find / -perm -4000 -type f 2>/dev/null')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('find / -perm -4000 -type f 2>/dev/null')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">grep -rni "password" /var/www/ 2>/dev/null</div>
               <p>Recursive search for exposed secrets in webroot.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('grep -rni \"password\" /var/www/ 2>/dev/null')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('grep -rni \"password\" /var/www/ 2>/dev/null')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">ss -tulpn</div>
               <p>List listening ports and binding processes.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('ss -tulpn')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('ss -tulpn')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">sudo -l</div>
               <p>Check allowed sudo commands for current user.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('sudo -l')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('sudo -l')">Insert</button>
             </div>
           </div>
 
@@ -645,17 +634,17 @@ Use the 5 Core Questions:
             <div class="snippet-item">
               <div class="snippet-code">Get-Process | Sort-Object CPU -Descending | Select-Object -First 5</div>
               <p>Top CPU consuming processes.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('Get-Process | Sort-Object CPU -Descending | Select-Object -First 5')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('Get-Process | Sort-Object CPU -Descending | Select-Object -First 5')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">Test-NetConnection -ComputerName 10.0.0.1 -Port 445</div>
               <p>Test remote SMB port connectivity.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('Test-NetConnection -ComputerName 10.0.0.1 -Port 445')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('Test-NetConnection -ComputerName 10.0.0.1 -Port 445')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">whoami /priv</div>
               <p>List user token privileges.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('whoami /priv')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('whoami /priv')">Insert</button>
             </div>
           </div>
 
@@ -665,17 +654,17 @@ Use the 5 Core Questions:
             <div class="snippet-item">
               <div class="snippet-code">curl -Iv https://target.local</div>
               <p>Verbose HTTP headers and TLS check.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('curl -Iv https://target.local')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('curl -Iv https://target.local')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">' OR 1=1--</div>
               <p>Classic SQL injection auth bypass payload.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('\' OR 1=1--')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('\' OR 1=1--')">Insert</button>
             </div>
             <div class="snippet-item">
               <div class="snippet-code">&lt;script&gt;alert(document.domain)&lt;/script&gt;</div>
               <p>Basic XSS proof-of-concept string.</p>
-              <button class="btn btn-outline btn-xs" onclick="insertSnippet('<script>alert(document.domain)</script>')">Insert</button>
+              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('<script>alert(document.domain)</script>')">Insert</button>
             </div>
           </div>
         </div>
@@ -691,7 +680,7 @@ Use the 5 Core Questions:
           <i data-lucide="folder-clock"></i>
           <h3>Saved Note Drafts</h3>
         </div>
-        <button class="modal-close" id="btnCloseDraftsModal">&times;</button>
+        <button class="modal-close" id="btnCloseDraftsModal" aria-label="Close modal">&times;</button>
       </div>
       <div class="modal-body" id="draftsListContainer">
         <!-- Populated via JS -->
@@ -705,17 +694,17 @@ Use the 5 Core Questions:
       <div class="success-icon-wrap">
         <i data-lucide="check-circle" class="big-success-icon"></i>
       </div>
-      <h3 class="success-title">Note Successfully Committed & Pushed!</h3>
+      <h3 class="success-title">Note Committed & Pushed</h3>
       <p class="success-desc" id="successDesc">Your daily note has been safely committed to git and pushed to GitHub.</p>
 
       <div class="success-links-box">
         <div class="link-item">
           <span class="link-label">File in Repository:</span>
-          <a href="#" target="_blank" id="successFileLink" class="cyber-link">...</a>
+          <a href="#" target="_blank" rel="noopener noreferrer" id="successFileLink" class="accent-link">...</a>
         </div>
         <div class="link-item">
           <span class="link-label">Commit Hash:</span>
-          <a href="#" target="_blank" id="successCommitLink" class="cyber-link">...</a>
+          <a href="#" target="_blank" rel="noopener noreferrer" id="successCommitLink" class="accent-link">...</a>
         </div>
       </div>
 

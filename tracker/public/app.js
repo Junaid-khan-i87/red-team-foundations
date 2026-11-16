@@ -489,6 +489,16 @@ function setupEditorEvents() {
     });
   });
 
+  // Responsive: automatically adapt view on mobile screens (<= 880px)
+  if (window.innerWidth <= 880 && state.activeView === 'split') {
+    setViewMode('edit');
+  }
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 880 && state.activeView === 'split') {
+      setViewMode('edit');
+    }
+  });
+
   // Zen Mode Toggle
   dom.btnToggleZen.addEventListener('click', () => {
     state.isZenFullscreen = !state.isZenFullscreen;
