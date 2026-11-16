@@ -20,13 +20,25 @@
   <!-- Preloaded Synchronous 90-Day Curriculum Data -->
   <script src="data/roadmap.js"></script>
 
+  <!-- Pre-render Theme Application to prevent FOUC -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem('redteam_theme') || 'dark';
+        if (theme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-  <!-- Sleek Top Navigation Bar -->
+  <!-- Sleek Responsive Top Navigation Bar -->
   <header class="top-nav">
     <div class="top-nav-main">
       <div class="nav-brand">
@@ -38,14 +50,22 @@
       </div>
 
       <div class="header-actions">
-        <span class="streak-pill" id="streakVal" title="Daily Learning Streak">🔥 1 Day Streak</span>
+        <span class="streak-pill" id="streakVal" title="Daily Learning Streak">
+          🔥 <span class="streak-text-full">1 Day Streak</span><span class="streak-text-short">1d</span>
+        </span>
+        <button class="btn btn-secondary btn-icon-only" id="btnThemeToggle" title="Switch to White Theme" aria-label="Toggle Theme">
+          <i data-lucide="sun" id="themeToggleIcon"></i>
+        </button>
         <button class="btn btn-secondary btn-sm hide-on-mobile" id="btnOpenCheatsheet" title="Command & Syntax Snippets">
           <i data-lucide="terminal"></i>
           <span>Snippets</span>
         </button>
-        <button class="btn btn-primary btn-sm" id="btnQuickNewNote" title="Write Today's Note">
+        <button class="btn btn-primary btn-sm btn-new-note" id="btnQuickNewNote" title="Write Today's Note">
           <i data-lucide="plus"></i>
-          <span>New Note</span>
+          <span class="hide-on-compact">New Note</span>
+        </button>
+        <button class="btn btn-secondary btn-icon-only mobile-menu-toggle" id="btnMobileNavToggle" title="Open Navigation Menu" aria-label="Open Navigation Menu">
+          <i data-lucide="menu" id="menuToggleIcon"></i>
         </button>
       </div>
     </div>
@@ -79,6 +99,57 @@
         <span>Git Sync</span>
       </button>
     </nav>
+
+    <!-- Mobile Navigation Drawer (Collapsible) -->
+    <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+      <div class="mobile-nav-links">
+        <button class="mobile-tab-btn active" data-tab="studio">
+          <div class="mobile-tab-left">
+            <i data-lucide="book-open"></i>
+            <span>Today's Mission</span>
+          </div>
+          <span class="badge-dot"></span>
+        </button>
+        <button class="mobile-tab-btn" data-tab="roadmap">
+          <div class="mobile-tab-left">
+            <i data-lucide="map"></i>
+            <span>Course Syllabus</span>
+          </div>
+          <span class="tab-badge" id="mobileRoadmapBadge">Day 1/90</span>
+        </button>
+        <button class="mobile-tab-btn" data-tab="timer">
+          <div class="mobile-tab-left">
+            <i data-lucide="clock"></i>
+            <span>30-Min Protocol</span>
+          </div>
+        </button>
+        <button class="mobile-tab-btn" data-tab="explorer">
+          <div class="mobile-tab-left">
+            <i data-lucide="folder-git-2"></i>
+            <span>Notes Vault</span>
+          </div>
+          <span class="tab-badge" id="mobileNotesBadge">0</span>
+        </button>
+        <button class="mobile-tab-btn" data-tab="arsenal">
+          <div class="mobile-tab-left">
+            <i data-lucide="shield-check"></i>
+            <span>Resources</span>
+          </div>
+        </button>
+        <button class="mobile-tab-btn" data-tab="git-settings">
+          <div class="mobile-tab-left">
+            <i data-lucide="git-commit"></i>
+            <span>Git Sync</span>
+          </div>
+        </button>
+      </div>
+      <div class="mobile-nav-footer">
+        <button class="btn btn-secondary btn-sm w-100" id="btnMobileSnippets">
+          <i data-lucide="terminal"></i>
+          <span>Command & Syntax Snippets</span>
+        </button>
+      </div>
+    </div>
   </header>
 
   <!-- Main App Content -->

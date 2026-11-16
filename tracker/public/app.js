@@ -180,6 +180,16 @@ function showToast(title, desc, type = 'info', duration = 3500) {
 
 // DOM Elements
 const dom = {
+  // Theme & Mobile Navigation
+  btnThemeToggle: document.getElementById('btnThemeToggle'),
+  themeToggleIcon: document.getElementById('themeToggleIcon'),
+  btnMobileNavToggle: document.getElementById('btnMobileNavToggle'),
+  menuToggleIcon: document.getElementById('menuToggleIcon'),
+  mobileNavDrawer: document.getElementById('mobileNavDrawer'),
+  btnMobileSnippets: document.getElementById('btnMobileSnippets'),
+  mobileRoadmapBadge: document.getElementById('mobileRoadmapBadge'),
+  mobileNotesBadge: document.getElementById('mobileNotesBadge'),
+
   // Tabs
   tabBtns: document.querySelectorAll('.tab-btn'),
   tabPanes: document.querySelectorAll('.tab-pane'),
@@ -305,10 +315,14 @@ const dom = {
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', async () => {
+  // Setup Theme first
+  setupTheme();
+
   // Render Lucide Icons
   lucide.createIcons();
 
   setupTabs();
+  setupMobileNavbar();
   setupEditorEvents();
   setupFormattingToolbar();
   setupTimer();
@@ -336,6 +350,85 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ==========================================
+// Theme Management (Light / Dark)
+// ==========================================
+function setupTheme() {
+  const savedTheme = localStorage.getItem('redteam_theme') || 'dark';
+  applyTheme(savedTheme, false);
+
+  if (dom.btnThemeToggle) {
+    dom.btnThemeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      const next = current === 'light' ? 'dark' : 'light';
+      applyTheme(next, true);
+    });
+  }
+}
+
+function applyTheme(theme, notify = false) {
+  const isLight = theme === 'light';
+  if (isLight) {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.body.classList.add('theme-light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    document.body.classList.remove('theme-light');
+  }
+  localStorage.setItem('redteam_theme', theme);
+
+  if (dom.themeToggleIcon) {
+    dom.themeToggleIcon.setAttribute('data-lucide', isLight ? 'moon' : 'sun');
+    if (window.lucide) lucide.createIcons();
+  }
+  if (dom.btnThemeToggle) {
+    const label = isLight ? 'Switch to Dark Theme' : 'Switch to White Theme';
+    dom.btnThemeToggle.setAttribute('title', label);
+    dom.btnThemeToggle.setAttribute('aria-label', label);
+  }
+  if (notify && typeof showToast === 'function') {
+    showToast(`Theme switched to ${isLight ? 'White (GitHub Light)' : 'GitHub Dark'}`, 'info');
+  }
+}
+
+// ==========================================
+// Mobile Navigation Drawer Management
+// ==========================================
+function setupMobileNavbar() {
+  if (dom.btnMobileNavToggle && dom.mobileNavDrawer) {
+    dom.btnMobileNavToggle.addEventListener('click', () => {
+      const isOpen = dom.mobileNavDrawer.classList.toggle('open');
+      dom.mobileNavDrawer.setAttribute('aria-hidden', !isOpen);
+      if (dom.menuToggleIcon) {
+        dom.menuToggleIcon.setAttribute('data-lucide', isOpen ? 'x' : 'menu');
+        if (window.lucide) lucide.createIcons();
+      }
+    });
+  }
+
+  if (dom.mobileNavDrawer) {
+    dom.mobileNavDrawer.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        switchTab(tab);
+        dom.mobileNavDrawer.classList.remove('open');
+        dom.mobileNavDrawer.setAttribute('aria-hidden', 'true');
+        if (dom.menuToggleIcon) {
+          dom.menuToggleIcon.setAttribute('data-lucide', 'menu');
+          if (window.lucide) lucide.createIcons();
+        }
+      });
+    });
+  }
+
+  if (dom.btnMobileSnippets && dom.btnOpenCheatsheet) {
+    dom.btnMobileSnippets.addEventListener('click', () => {
+      dom.mobileNavDrawer?.classList.remove('open');
+      dom.btnOpenCheatsheet.click();
+    });
+  }
+}
+
+// ==========================================
 // Tab Management
 // ==========================================
 function setupTabs() {
@@ -359,9 +452,20 @@ function switchTab(tabName) {
   dom.tabBtns.forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
   });
+  if (dom.mobileNavDrawer) {
+    dom.mobileNavDrawer.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
+    });
+  }
   dom.tabPanes.forEach(pane => {
     pane.classList.toggle('active', pane.id === `pane-${tabName}`);
   });
+
+  // Auto-scroll the active tab into view horizontally if needed
+  const activeTabBtn = document.querySelector(`.main-tabs-bar .tab-btn[data-tab="${tabName}"]`);
+  if (activeTabBtn) {
+    activeTabBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
   lucide.createIcons();
 }
 
@@ -1702,7 +1806,10 @@ function updateProgressDisplays() {
   dom.completedCountText.textContent = `${count} of 90 Days Completed`;
   dom.daysRemainingText.textContent = `${remaining} Days Remaining`;
   dom.roadmapProgressBadge.textContent = `Day ${count}/90`;
-  if (dom.streakVal) dom.streakVal.textContent = `🔥 ${streak} DAY${streak > 1 ? 'S' : ''}`;
+  if (dom.mobileRoadmapBadge) dom.mobileRoadmapBadge.textContent = `Day ${count}/90`;
+  if (dom.streakVal) {
+    dom.streakVal.innerHTML = `🔥 <span class="streak-text-full">${streak} Day${streak > 1 ? 's' : ''} Streak</span><span class="streak-text-short">${streak}d</span>`;
+  }
 }
 
 // ==========================================
@@ -1836,6 +1943,7 @@ async function loadNotes() {
     const res = await fetch('/api/notes');
     state.notes = await res.json();
     dom.notesCountBadge.textContent = `${state.notes.length} Notes`;
+    if (dom.mobileNotesBadge) dom.mobileNotesBadge.textContent = `${state.notes.length}`;
     renderNotesTree(state.notes);
   } catch (err) {
     console.warn('Could not load notes:', err);
