@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+.npm/
+
+# OS and Editor
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.local
+
+# Drafts and Local Cache (Keep tracked if user wants, but exclude temp logs)
+tracker/data/cache/
+*.log
