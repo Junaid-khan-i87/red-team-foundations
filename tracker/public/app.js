@@ -426,6 +426,20 @@ function setupMobileNavbar() {
       dom.btnOpenCheatsheet.click();
     });
   }
+
+  // Close mobile drawer on outside click
+  document.addEventListener('click', (e) => {
+    if (dom.mobileNavDrawer?.classList.contains('open')) {
+      if (!dom.mobileNavDrawer.contains(e.target) && !dom.btnMobileNavToggle?.contains(e.target)) {
+        dom.mobileNavDrawer.classList.remove('open');
+        dom.mobileNavDrawer.setAttribute('aria-hidden', 'true');
+        if (dom.menuToggleIcon) {
+          dom.menuToggleIcon.setAttribute('data-lucide', 'menu');
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+  });
 }
 
 // ==========================================

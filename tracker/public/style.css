@@ -419,8 +419,8 @@ a:hover {
 }
 
 .btn-icon-only {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -429,12 +429,33 @@ a:hover {
   flex-shrink: 0;
 }
 .btn-icon-only i {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
 }
 
 .mobile-menu-toggle {
   display: none;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--canvas-default);
+  border: 1px solid var(--border-default);
+  color: var(--fg-default);
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+.mobile-menu-toggle:hover {
+  background-color: var(--canvas-hover);
+  border-color: var(--border-focus);
+  color: var(--accent-fg);
+}
+.mobile-menu-toggle i {
+  width: 16px;
+  height: 16px;
 }
 
 /* GitHub Repository Subnav Tabs */
@@ -450,7 +471,7 @@ a:hover {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   border-top: 1px solid var(--border-subtle);
-  padding: 0 2px;
+  padding: 0 4px;
   box-sizing: border-box;
 }
 .main-tabs-bar::-webkit-scrollbar {
@@ -767,19 +788,27 @@ select.form-control {
   font-size: 13px;
   font-weight: 600;
   color: var(--fg-default);
-  background-color: var(--canvas-inset);
+  background-color: var(--canvas-default);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
-  padding: 5px 28px 5px 10px;
+  padding: 6px 30px 6px 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.lesson-select:focus {
+  border-color: var(--accent-fg);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.25);
+}
+[data-theme="light"] .lesson-select:focus {
+  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.2);
 }
 
 .lesson-nav-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .day-status-toggle {
@@ -787,24 +816,36 @@ select.form-control {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--canvas-default);
+  color: var(--fg-default);
   transition: all var(--transition);
 }
+.day-status-toggle:hover {
+  background: var(--canvas-hover);
+  border-color: var(--border-focus);
+}
 .day-status-toggle.completed {
-  background-color: var(--success-muted);
-  border-color: rgba(46, 160, 67, 0.5);
-  color: var(--success-fg);
-  font-weight: 600;
+  background-color: var(--success-emphasis) !important;
+  border-color: var(--success-emphasis) !important;
+  color: #ffffff !important;
+}
+.day-status-toggle.completed i {
+  color: #ffffff !important;
 }
 
 /* 2. Course Mission & Tasks Checklist Card */
 .course-task-card {
-  margin: 10px 16px 0 16px;
+  margin: 12px 18px 0 18px;
   background-color: var(--canvas-subtle);
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  padding: 10px 14px;
+  border-radius: 10px;
+  padding: 12px 16px;
   flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
   transition: all var(--transition);
 }
 
@@ -812,29 +853,33 @@ select.form-control {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 .course-task-meta {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .course-badge {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
-  background: var(--canvas-inset);
-  border: 1px solid var(--border-default);
-  padding: 2px 6px;
+  background: var(--accent-muted);
+  border: 1px solid rgba(88, 166, 255, 0.35);
+  padding: 3px 8px;
   border-radius: var(--radius-sm);
   color: var(--accent-fg);
   white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+[data-theme="light"] .course-badge {
+  border-color: rgba(9, 105, 218, 0.25);
 }
 
 .course-phase {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--fg-muted);
 }
@@ -848,20 +893,21 @@ select.form-control {
 .resource-link-chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 500;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
   color: var(--accent-fg);
   text-decoration: none;
   background: var(--accent-muted);
-  border: 1px solid rgba(56, 139, 253, 0.3);
-  padding: 2px 8px;
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  padding: 3px 10px;
   border-radius: var(--radius-sm);
   transition: all var(--transition);
   white-space: nowrap;
 }
 .resource-link-chip:hover {
-  background: rgba(56, 139, 253, 0.25);
+  background: rgba(88, 166, 255, 0.25);
+  text-decoration: none;
 }
 
 .btn-toggle-task {
@@ -869,64 +915,79 @@ select.form-control {
   border: none;
   color: var(--fg-muted);
   cursor: pointer;
-  padding: 2px;
+  padding: 4px;
   border-radius: 4px;
   display: inline-flex;
   align-items: center;
-  transition: color var(--transition);
+  transition: color var(--transition), background-color var(--transition);
 }
 .btn-toggle-task:hover {
   color: var(--fg-default);
+  background-color: var(--canvas-hover);
 }
 
 .course-task-card.collapsed .course-task-body {
   display: none;
 }
 .course-task-card.collapsed {
-  padding-bottom: 10px;
+  padding-bottom: 12px;
 }
 
 .task-goal-row {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border-muted);
-  font-size: 12.5px;
-  color: var(--fg-muted);
-  line-height: 1.4;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: var(--canvas-default);
+  border-left: 3px solid var(--accent-fg);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: 13px;
+  color: var(--fg-default);
+  line-height: 1.5;
 }
 .task-goal-row strong {
-  color: var(--fg-default);
+  color: var(--accent-fg);
+  margin-right: 4px;
 }
 
 .daily-tasks-checklist {
-  margin-top: 8px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
 }
 
 .task-item {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 12px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--canvas-default);
+  border: 1px solid var(--border-subtle);
+  font-size: 12.5px;
   color: var(--fg-default);
   cursor: pointer;
   user-select: none;
-  line-height: 1.4;
+  transition: all var(--transition);
+}
+.task-item:hover {
+  background-color: var(--canvas-hover);
+  border-color: var(--border-default);
 }
 .task-checkbox {
-  margin-top: 2px;
   accent-color: var(--success-emphasis);
   cursor: pointer;
-  width: 14px;
-  height: 14px;
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
   flex-shrink: 0;
+}
+.task-item.checked {
+  background-color: var(--canvas-subtle);
+  opacity: 0.65;
 }
 .task-item.checked .task-text {
   text-decoration: line-through;
   color: var(--fg-muted);
-  opacity: 0.75;
 }
 
 /* 3. Clean Workspace Toolbar */
@@ -2629,9 +2690,18 @@ select.form-control {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 850px) {
+  .top-nav {
+    padding: 0 12px;
+  }
+  .top-nav-main {
+    height: 52px;
+  }
+  .main-tabs-bar {
+    display: none !important;
+  }
   .mobile-menu-toggle {
-    display: inline-flex;
+    display: inline-flex !important;
   }
   .hide-on-mobile {
     display: none !important;
@@ -2704,9 +2774,18 @@ select.form-control {
   .hide-on-compact {
     display: none !important;
   }
+  .mobile-menu-toggle .mobile-menu-text {
+    display: none !important;
+  }
+  .mobile-menu-toggle {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
+  }
   .btn-new-note {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     padding: 0;
     justify-content: center;
   }
