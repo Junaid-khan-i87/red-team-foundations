@@ -14,6 +14,9 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Markdown Parser -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Highlight.js for Syntax Highlighting in Live Preview -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <!-- Confetti Celebration -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
@@ -24,6 +27,9 @@
   <div class="cyber-grid"></div>
   <div class="cyber-glow glow-top"></div>
   <div class="cyber-glow glow-bottom"></div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
 
   <!-- Header Banner -->
   <header class="top-nav">
@@ -39,6 +45,13 @@
     </div>
 
     <div class="mission-stats-strip">
+      <div class="stat-pill">
+        <i data-lucide="flame" class="highlight-yellow"></i>
+        <div>
+          <span class="stat-label">STREAK</span>
+          <span class="stat-value highlight-yellow" id="streakVal">🔥 1 DAY</span>
+        </div>
+      </div>
       <div class="stat-pill">
         <i data-lucide="calendar"></i>
         <div>
@@ -72,6 +85,10 @@
     </div>
 
     <div class="header-actions">
+      <button class="btn btn-secondary btn-sm" id="btnOpenCheatsheet">
+        <i data-lucide="zap"></i>
+        <span>Cheat Sheet</span>
+      </button>
       <button class="btn btn-secondary btn-sm" id="btnOpenTimerHeader">
         <i data-lucide="timer"></i>
         <span>Focus Timer</span>
@@ -118,7 +135,7 @@
 
     <!-- ==================== TAB 1: NOTE STUDIO & GIT PUSH ==================== -->
     <section class="tab-pane active" id="pane-studio">
-      <div class="studio-layout">
+      <div class="studio-layout" id="studioContainer">
         <!-- Editor Controls Bar -->
         <div class="studio-topbar">
           <div class="editor-metadata-grid">
@@ -161,13 +178,16 @@
           <div class="studio-actions-row">
             <div class="action-buttons-left">
               <button class="btn btn-outline btn-xs" id="btnLoad5Questions">
-                <i data-lucide="help-circle"></i> Load 5-Question Framework
+                <i data-lucide="help-circle"></i> 5-Question Framework
               </button>
               <button class="btn btn-outline btn-xs" id="btnLoadDay1">
-                <i data-lucide="sparkles"></i> Load Day 1 Starter
+                <i data-lucide="sparkles"></i> Day 1 Starter
               </button>
               <button class="btn btn-outline btn-xs" id="btnLoadLabTemplate">
-                <i data-lucide="file-text"></i> Load Lab Report Template
+                <i data-lucide="file-text"></i> Lab Report Template
+              </button>
+              <button class="btn btn-outline btn-xs" id="btnOpenSnippetsBar">
+                <i data-lucide="code"></i> Insert Snippet
               </button>
               <button class="btn btn-outline btn-xs" id="btnClearEditor">
                 <i data-lucide="trash-2"></i> Clear
@@ -188,6 +208,9 @@
             </div>
 
             <div class="view-toggles">
+              <button class="view-btn" id="btnToggleZen" title="Toggle Distraction-Free Fullscreen">
+                <i data-lucide="maximize-2"></i>
+              </button>
               <button class="view-btn active" data-view="split" title="Split Screen">
                 <i data-lucide="columns"></i>
               </button>
@@ -196,6 +219,69 @@
               </button>
               <button class="view-btn" data-view="preview" title="Preview Only">
                 <i data-lucide="eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Rich Markdown Formatting Toolbar -->
+          <div class="md-format-toolbar">
+            <div class="toolbar-group">
+              <button type="button" class="toolbar-btn" data-format="bold" title="Bold (Ctrl+B)">
+                <i data-lucide="bold"></i>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="italic" title="Italic (Ctrl+I)">
+                <i data-lucide="italic"></i>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="strikethrough" title="Strikethrough">
+                <i data-lucide="strikethrough"></i>
+              </button>
+            </div>
+
+            <div class="toolbar-separator"></div>
+
+            <div class="toolbar-group">
+              <button type="button" class="toolbar-btn" data-format="h1" title="Heading 1">H1</button>
+              <button type="button" class="toolbar-btn" data-format="h2" title="Heading 2">H2</button>
+              <button type="button" class="toolbar-btn" data-format="h3" title="Heading 3">H3</button>
+            </div>
+
+            <div class="toolbar-separator"></div>
+
+            <div class="toolbar-group">
+              <button type="button" class="toolbar-btn" data-format="inline-code" title="Inline Code">
+                <i data-lucide="code-2"></i>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="code-bash" title="Bash Code Block">
+                <code>&gt;_ bash</code>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="code-python" title="Python Code Block">
+                <code>py</code>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="code-powershell" title="PowerShell Code Block">
+                <code>ps1</code>
+              </button>
+            </div>
+
+            <div class="toolbar-separator"></div>
+
+            <div class="toolbar-group">
+              <button type="button" class="toolbar-btn" data-format="quote" title="Blockquote">
+                <i data-lucide="quote"></i>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="bullet-list" title="Bullet List">
+                <i data-lucide="list"></i>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="task-list" title="Task Checkbox">
+                <i data-lucide="check-square"></i>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="table" title="Insert Table">
+                <i data-lucide="table"></i>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="link" title="Insert Link (Ctrl+K)">
+                <i data-lucide="link"></i>
+              </button>
+              <button type="button" class="toolbar-btn" data-format="hr" title="Horizontal Divider">
+                <i data-lucide="minus"></i>
               </button>
             </div>
           </div>
@@ -212,10 +298,12 @@
               <div class="editor-stats">
                 <span id="wordCountLabel">0 words</span>
                 <span class="dot-separator">•</span>
+                <span id="charCountLabel">0 chars</span>
+                <span class="dot-separator">•</span>
                 <span id="readingTimeLabel">1 min read</span>
               </div>
             </div>
-            <textarea id="markdownEditor" class="markdown-textarea" placeholder="Start typing your daily learning notes or paste your practice session notes here...
+            <textarea id="markdownEditor" class="markdown-textarea" spellcheck="false" placeholder="Start typing your daily learning notes or paste your practice session notes here...
 
 Use the 5 Core Questions:
 1. What is it?
@@ -229,14 +317,19 @@ Use the 5 Core Questions:
           <div class="preview-pane">
             <div class="pane-header">
               <div class="pane-label">
-                <i data-lucide="eye"></i> LIVE PREVIEW (GITHUB FLAVORED)
+                <i data-lucide="eye"></i> LIVE PREVIEW (SYNTAX HIGHLIGHTED)
               </div>
-              <button class="btn-copy-preview" id="btnCopyMarkdown" title="Copy Raw Markdown">
-                <i data-lucide="copy"></i> Copy
-              </button>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-copy-preview" id="btnDownloadMarkdown" title="Download Markdown File">
+                  <i data-lucide="download"></i> Download .md
+                </button>
+                <button class="btn-copy-preview" id="btnCopyMarkdown" title="Copy Raw Markdown">
+                  <i data-lucide="copy"></i> Copy
+                </button>
+              </div>
             </div>
             <div id="markdownPreview" class="markdown-body">
-              <!-- Rendered via marked.js -->
+              <!-- Rendered via marked.js + highlight.js -->
             </div>
           </div>
         </div>
@@ -284,6 +377,24 @@ Use the 5 Core Questions:
               <span id="completedCountText">1 of 90 Days Completed</span>
               <span id="daysRemainingText">89 Days Remaining</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Interactive 90-Day Visual Grid / Punch Card -->
+        <div class="visual-matrix-card">
+          <div class="matrix-header">
+            <div class="matrix-title">
+              <i data-lucide="grid"></i>
+              <h3>90-Day Visual Punch Card & Habit Tracker</h3>
+            </div>
+            <div class="matrix-legend">
+              <span class="legend-item"><span class="legend-box done"></span> Completed</span>
+              <span class="legend-item"><span class="legend-box current"></span> Active / Today</span>
+              <span class="legend-item"><span class="legend-box pending"></span> Upcoming</span>
+            </div>
+          </div>
+          <div class="matrix-grid-container" id="matrixGridContainer">
+            <!-- 90 interactive boxes generated dynamically -->
           </div>
         </div>
 
@@ -348,6 +459,21 @@ Use the 5 Core Questions:
             </div>
           </div>
 
+          <!-- Cyber Ambient Audio Control -->
+          <div class="ambient-audio-strip">
+            <div class="ambient-info">
+              <i data-lucide="headphones"></i>
+              <span>Cyber Focus Drone (Synthesized White/Brown Noise)</span>
+            </div>
+            <div class="ambient-controls">
+              <button class="btn btn-outline btn-xs" id="btnToggleAmbient">
+                <i data-lucide="volume-x" id="ambientIcon"></i>
+                <span id="ambientText">Turn On Ambient</span>
+              </button>
+              <input type="range" id="ambientVolume" min="0" max="1" step="0.05" value="0.25" class="volume-slider">
+            </div>
+          </div>
+
           <!-- Timer Controls -->
           <div class="timer-controls">
             <button class="btn btn-primary btn-lg" id="btnTimerToggle">
@@ -360,7 +486,7 @@ Use the 5 Core Questions:
             </button>
             <button class="btn btn-outline btn-lg" id="btnTimerSoundTest">
               <i data-lucide="volume-2"></i>
-              <span>Audio Cue</span>
+              <span>Test Audio Cue</span>
             </button>
           </div>
         </div>
@@ -561,6 +687,112 @@ Use the 5 Core Questions:
       </div>
     </section>
   </main>
+
+  <!-- ==================== CHEAT SHEET MODAL ==================== -->
+  <div class="modal-overlay" id="cheatsheetModal">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="terminal"></i>
+          <h3>Red Team Quick Snippet & Command Library</h3>
+        </div>
+        <button class="modal-close" id="btnCloseCheatsheetModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="snippets-grid">
+          <!-- Networking -->
+          <div class="snippet-category-card">
+            <div class="snippet-cat-title"><i data-lucide="activity"></i> Networking & DNS</div>
+            <div class="snippet-item">
+              <div class="snippet-code">dig domain.com +noall +answer</div>
+              <p>Resolve DNS A record concisely.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('dig domain.com +noall +answer')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">dig axfr @ns1.domain.com domain.com</div>
+              <p>Attempt unrestricted DNS Zone Transfer.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('dig axfr @ns1.domain.com domain.com')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">sudo tcpdump -i any -nn -c 10 port 53</div>
+              <p>Live capture 10 DNS packets on any interface.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('sudo tcpdump -i any -nn -c 10 port 53')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">nc -zv 192.168.1.1 22 80 443</div>
+              <p>Fast banner check across ports.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('nc -zv 192.168.1.1 22 80 443')">Insert</button>
+            </div>
+          </div>
+
+          <!-- Linux CLI -->
+          <div class="snippet-category-card">
+            <div class="snippet-cat-title"><i data-lucide="terminal"></i> Linux PrivEsc & Recon</div>
+            <div class="snippet-item">
+              <div class="snippet-code">find / -perm -4000 -type f 2>/dev/null</div>
+              <p>Find all SUID binaries on system.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('find / -perm -4000 -type f 2>/dev/null')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">grep -rni "password" /var/www/ 2>/dev/null</div>
+              <p>Recursive search for exposed secrets in webroot.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('grep -rni \"password\" /var/www/ 2>/dev/null')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">ss -tulpn</div>
+              <p>List listening ports and binding processes.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('ss -tulpn')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">sudo -l</div>
+              <p>Check allowed sudo commands for current user.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('sudo -l')">Insert</button>
+            </div>
+          </div>
+
+          <!-- Windows & PowerShell -->
+          <div class="snippet-category-card">
+            <div class="snippet-cat-title"><i data-lucide="cpu"></i> Windows & PowerShell</div>
+            <div class="snippet-item">
+              <div class="snippet-code">Get-Process | Sort-Object CPU -Descending | Select-Object -First 5</div>
+              <p>Top CPU consuming processes.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('Get-Process | Sort-Object CPU -Descending | Select-Object -First 5')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">Test-NetConnection -ComputerName 10.0.0.1 -Port 445</div>
+              <p>Test remote SMB port connectivity.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('Test-NetConnection -ComputerName 10.0.0.1 -Port 445')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">whoami /priv</div>
+              <p>List user token privileges (SeImpersonate, etc.).</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('whoami /priv')">Insert</button>
+            </div>
+          </div>
+
+          <!-- Web & Burp -->
+          <div class="snippet-category-card">
+            <div class="snippet-cat-title"><i data-lucide="globe"></i> Web & OWASP Testing</div>
+            <div class="snippet-item">
+              <div class="snippet-code">curl -Iv https://target.local</div>
+              <p>Verbose HTTP headers and TLS certificate check.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('curl -Iv https://target.local')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">' OR 1=1--</div>
+              <p>Classic SQL injection auth bypass test payload.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('\' OR 1=1--')">Insert</button>
+            </div>
+            <div class="snippet-item">
+              <div class="snippet-code">&lt;script&gt;alert(document.domain)&lt;/script&gt;</div>
+              <p>Basic XSS proof-of-concept string.</p>
+              <button class="btn btn-outline btn-xs" onclick="insertSnippet('<script>alert(document.domain)</script>')">Insert</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ==================== DRAFTS MODAL DRAWER ==================== -->
   <div class="modal-overlay" id="draftsModal">

@@ -1,6 +1,6 @@
 /**
  * Red Team Foundations // 90-Day Command Center & Journal
- * Frontend Engine
+ * Enhanced Frontend Engine
  */
 
 // Application State
@@ -13,6 +13,7 @@ const state = {
   activeTab: 'studio',
   activeView: 'split',
   activePhaseFilter: 'all',
+  isZenFullscreen: false,
   
   // Timer State
   timer: {
@@ -21,8 +22,29 @@ const state = {
     isRunning: false,
     intervalId: null,
     currentPhase: 1 // 1: Recall (30-25m), 2: Study (25-10m), 3: Practice (10-0m)
+  },
+
+  // Ambient Audio State
+  ambient: {
+    isPlaying: false,
+    gainNode: null,
+    sourceNode: null
   }
 };
+
+// Configure Marked with Highlight.js
+marked.setOptions({
+  highlight: function(code, lang) {
+    if (window.hljs) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    }
+    return code;
+  },
+  langPrefix: 'hljs language-',
+  breaks: true,
+  gfm: true
+});
 
 // Web Audio API Synthesizer (Zero external sound dependencies)
 const soundFx = {
@@ -41,7 +63,7 @@ const soundFx = {
       const gain = this.ctx.createGain();
       osc.type = type;
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-      gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
@@ -67,8 +89,92 @@ const soundFx = {
         osc.stop(now + idx * 0.1 + 0.35);
       });
     } catch (e) { console.warn(e); }
+  },
+  toggleAmbient(volume = 0.25) {
+    try {
+      this.init();
+      if (!this.ctx) return false;
+
+      if (state.ambient.isPlaying) {
+        if (state.ambient.sourceNode) {
+          state.ambient.sourceNode.stop();
+          state.ambient.sourceNode.disconnect();
+        }
+        state.ambient.isPlaying = false;
+        return false;
+      } else {
+        // Synthesize Cyber Brown Noise Buffer
+        const bufferSize = this.ctx.sampleRate * 2;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let lastOut = 0.0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          output[i] = (lastOut + (0.02 * white)) / 1.02;
+          lastOut = output[i];
+          output[i] *= 3.5; // Gain compensation
+        }
+
+        const whiteNoise = this.ctx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+
+        // Low-pass filter for cozy ambient drone
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(350, this.ctx.currentTime);
+
+        const gainNode = this.ctx.createGain();
+        gainNode.gain.setValueAtTime(volume, this.ctx.currentTime);
+
+        whiteNoise.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(this.ctx.destination);
+
+        whiteNoise.start();
+        state.ambient.sourceNode = whiteNoise;
+        state.ambient.gainNode = gainNode;
+        state.ambient.isPlaying = true;
+        return true;
+      }
+    } catch (e) {
+      console.warn('Ambient audio error:', e);
+      return false;
+    }
+  },
+  setAmbientVolume(val) {
+    if (state.ambient.gainNode && this.ctx) {
+      state.ambient.gainNode.gain.setValueAtTime(val, this.ctx.currentTime);
+    }
   }
 };
+
+// Toast Notifications System
+function showToast(title, desc, type = 'info', duration = 3500) {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast-item ${type}`;
+
+  const iconName = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-octagon' : 'info';
+
+  toast.innerHTML = `
+    <i data-lucide="${iconName}" class="toast-icon"></i>
+    <div class="toast-content">
+      <div class="toast-title">${escapeHtml(title)}</div>
+      <div class="toast-desc">${escapeHtml(desc)}</div>
+    </div>
+  `;
+
+  container.appendChild(toast);
+  lucide.createIcons();
+
+  setTimeout(() => {
+    toast.classList.add('removing');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
 
 // DOM Elements
 const dom = {
@@ -77,6 +183,7 @@ const dom = {
   tabPanes: document.querySelectorAll('.tab-pane'),
 
   // Studio Elements
+  studioContainer: document.getElementById('studioContainer'),
   daySelect: document.getElementById('daySelect'),
   folderSelect: document.getElementById('folderSelect'),
   folderPrefixLabel: document.getElementById('folderPrefixLabel'),
@@ -86,6 +193,7 @@ const dom = {
   markdownPreview: document.getElementById('markdownPreview'),
   commitMsgInput: document.getElementById('commitMsgInput'),
   wordCountLabel: document.getElementById('wordCountLabel'),
+  charCountLabel: document.getElementById('charCountLabel'),
   readingTimeLabel: document.getElementById('readingTimeLabel'),
   draftStatusText: document.getElementById('draftStatusText'),
   draftCountBadge: document.getElementById('draftCountBadge'),
@@ -96,20 +204,25 @@ const dom = {
   btnLoad5Questions: document.getElementById('btnLoad5Questions'),
   btnLoadDay1: document.getElementById('btnLoadDay1'),
   btnLoadLabTemplate: document.getElementById('btnLoadLabTemplate'),
+  btnOpenSnippetsBar: document.getElementById('btnOpenSnippetsBar'),
   btnClearEditor: document.getElementById('btnClearEditor'),
   btnSaveDraftManual: document.getElementById('btnSaveDraftManual'),
   btnOpenDraftsModal: document.getElementById('btnOpenDraftsModal'),
   btnPostToGitHub: document.getElementById('btnPostToGitHub'),
   btnCopyMarkdown: document.getElementById('btnCopyMarkdown'),
+  btnDownloadMarkdown: document.getElementById('btnDownloadMarkdown'),
+  btnToggleZen: document.getElementById('btnToggleZen'),
 
   // Roadmap Elements
   weeksAccordionContainer: document.getElementById('weeksAccordionContainer'),
+  matrixGridContainer: document.getElementById('matrixGridContainer'),
   roadmapProgressBar: document.getElementById('roadmapProgressBar'),
   roadmapPercent: document.getElementById('roadmapPercent'),
   completedCountText: document.getElementById('completedCountText'),
   daysRemainingText: document.getElementById('daysRemainingText'),
   roadmapProgressBadge: document.getElementById('roadmapProgressBadge'),
   phaseBtns: document.querySelectorAll('.phase-btn'),
+  streakVal: document.getElementById('streakVal'),
 
   // Timer Elements
   timerDisplay: document.getElementById('timerDisplay'),
@@ -122,9 +235,14 @@ const dom = {
   btnTimerSoundTest: document.getElementById('btnTimerSoundTest'),
   btnOpenTimerHeader: document.getElementById('btnOpenTimerHeader'),
   btnQuickNewNote: document.getElementById('btnQuickNewNote'),
+  btnOpenCheatsheet: document.getElementById('btnOpenCheatsheet'),
   phaseBox1: document.getElementById('phaseBox1'),
   phaseBox2: document.getElementById('phaseBox2'),
   phaseBox3: document.getElementById('phaseBox3'),
+  btnToggleAmbient: document.getElementById('btnToggleAmbient'),
+  ambientIcon: document.getElementById('ambientIcon'),
+  ambientText: document.getElementById('ambientText'),
+  ambientVolume: document.getElementById('ambientVolume'),
 
   // Explorer Elements
   notesCountBadge: document.getElementById('notesCountBadge'),
@@ -145,6 +263,8 @@ const dom = {
   draftsModal: document.getElementById('draftsModal'),
   btnCloseDraftsModal: document.getElementById('btnCloseDraftsModal'),
   draftsListContainer: document.getElementById('draftsListContainer'),
+  cheatsheetModal: document.getElementById('cheatsheetModal'),
+  btnCloseCheatsheetModal: document.getElementById('btnCloseCheatsheetModal'),
   successModal: document.getElementById('successModal'),
   btnCloseSuccessModal: document.getElementById('btnCloseSuccessModal'),
   successFileLink: document.getElementById('successFileLink'),
@@ -159,7 +279,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   setupTabs();
   setupEditorEvents();
+  setupFormattingToolbar();
   setupTimer();
+  setupAmbientAudio();
   setupModals();
 
   // Load Initial Data from Backend
@@ -209,6 +331,103 @@ function switchTab(tabName) {
 }
 
 // ==========================================
+// Markdown Formatting Toolbar & Shortcuts
+// ==========================================
+function setupFormattingToolbar() {
+  const toolbarBtns = document.querySelectorAll('.toolbar-btn');
+  toolbarBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const format = btn.getAttribute('data-format');
+      applyFormatting(format);
+    });
+  });
+}
+
+function applyFormatting(format) {
+  const textarea = dom.markdownEditor;
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selectedText = textarea.value.substring(start, end);
+  let replacement = '';
+  let cursorOffset = 0;
+
+  switch (format) {
+    case 'bold':
+      replacement = `**${selectedText || 'bold text'}**`;
+      cursorOffset = selectedText ? replacement.length : 2;
+      break;
+    case 'italic':
+      replacement = `*${selectedText || 'italic text'}*`;
+      cursorOffset = selectedText ? replacement.length : 1;
+      break;
+    case 'strikethrough':
+      replacement = `~~${selectedText || 'strikethrough'}~~`;
+      cursorOffset = selectedText ? replacement.length : 2;
+      break;
+    case 'h1':
+      replacement = `\n# ${selectedText || 'Heading 1'}\n`;
+      cursorOffset = replacement.length;
+      break;
+    case 'h2':
+      replacement = `\n## ${selectedText || 'Heading 2'}\n`;
+      cursorOffset = replacement.length;
+      break;
+    case 'h3':
+      replacement = `\n### ${selectedText || 'Heading 3'}\n`;
+      cursorOffset = replacement.length;
+      break;
+    case 'inline-code':
+      replacement = `\`${selectedText || 'code'}\``;
+      cursorOffset = selectedText ? replacement.length : 1;
+      break;
+    case 'code-bash':
+      replacement = `\n\`\`\`bash\n${selectedText || '# Enter bash commands here\n'}\`\`\`\n`;
+      cursorOffset = replacement.length - 4;
+      break;
+    case 'code-python':
+      replacement = `\n\`\`\`python\n${selectedText || '# Enter python script here\n'}\`\`\`\n`;
+      cursorOffset = replacement.length - 4;
+      break;
+    case 'code-powershell':
+      replacement = `\n\`\`\`powershell\n${selectedText || '# Enter powershell commands here\n'}\`\`\`\n`;
+      cursorOffset = replacement.length - 4;
+      break;
+    case 'quote':
+      replacement = `\n> ${selectedText || 'Quote or key takeaway'}\n`;
+      cursorOffset = replacement.length;
+      break;
+    case 'bullet-list':
+      replacement = `\n- ${selectedText || 'List item'}\n`;
+      cursorOffset = replacement.length;
+      break;
+    case 'task-list':
+      replacement = `\n- [ ] ${selectedText || 'Task checklist item'}\n`;
+      cursorOffset = replacement.length;
+      break;
+    case 'table':
+      replacement = `\n| Column 1 | Column 2 | Column 3 |\n|---|---|---|\n| Data 1 | Data 2 | Data 3 |\n| Data 4 | Data 5 | Data 6 |\n`;
+      cursorOffset = replacement.length;
+      break;
+    case 'link':
+      replacement = `[${selectedText || 'Link Title'}](https://example.com)`;
+      cursorOffset = replacement.length - 1;
+      break;
+    case 'hr':
+      replacement = `\n\n---\n\n`;
+      cursorOffset = replacement.length;
+      break;
+    default:
+      return;
+  }
+
+  textarea.setRangeText(replacement, start, end, 'end');
+  textarea.focus();
+  renderMarkdown();
+  updateEditorStats();
+  soundFx.playBeep(500, 0.05);
+}
+
+// ==========================================
 // Editor & Live Markdown Engine
 // ==========================================
 function setupEditorEvents() {
@@ -216,6 +435,18 @@ function setupEditorEvents() {
   dom.markdownEditor.addEventListener('input', () => {
     renderMarkdown();
     updateEditorStats();
+  });
+
+  // Tab key indent support inside textarea
+  dom.markdownEditor.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const start = dom.markdownEditor.selectionStart;
+      const end = dom.markdownEditor.selectionEnd;
+      dom.markdownEditor.setRangeText('  ', start, end, 'end');
+      renderMarkdown();
+      updateEditorStats();
+    }
   });
 
   // Folder prefix updates
@@ -251,26 +482,57 @@ function setupEditorEvents() {
 
   // View modes
   dom.viewBtns.forEach(btn => {
+    if (btn.id === 'btnToggleZen') return;
     btn.addEventListener('click', () => {
       const mode = btn.getAttribute('data-view');
       setViewMode(mode);
     });
   });
 
+  // Zen Mode Toggle
+  dom.btnToggleZen.addEventListener('click', () => {
+    state.isZenFullscreen = !state.isZenFullscreen;
+    dom.studioContainer.classList.toggle('zen-fullscreen', state.isZenFullscreen);
+    dom.btnToggleZen.classList.toggle('active', state.isZenFullscreen);
+    dom.btnToggleZen.innerHTML = state.isZenFullscreen 
+      ? `<i data-lucide="minimize-2"></i>` 
+      : `<i data-lucide="maximize-2"></i>`;
+    lucide.createIcons();
+    showToast('Distraction-Free Mode', state.isZenFullscreen ? 'Fullscreen active. Press Esc to exit.' : 'Exited fullscreen.', 'info');
+  });
+
+  // Esc key exits Zen mode
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && state.isZenFullscreen) {
+      state.isZenFullscreen = false;
+      dom.studioContainer.classList.remove('zen-fullscreen');
+      dom.btnToggleZen.classList.remove('active');
+      dom.btnToggleZen.innerHTML = `<i data-lucide="maximize-2"></i>`;
+      lucide.createIcons();
+    }
+  });
+
   // Template buttons
   dom.btnLoad5Questions.addEventListener('click', () => {
     soundFx.playBeep(450, 0.08);
     insert5QuestionsTemplate();
+    showToast('Template Loaded', '5-Question Framework inserted into editor', 'info');
   });
 
   dom.btnLoadDay1.addEventListener('click', () => {
     soundFx.playBeep(520, 0.1);
     loadDay1Kickoff();
+    showToast('Day 1 Kickoff', 'Computer & Networking Fundamentals loaded', 'info');
   });
 
   dom.btnLoadLabTemplate.addEventListener('click', () => {
     soundFx.playBeep(400, 0.08);
     loadLabReportTemplate();
+    showToast('Lab Report Loaded', 'Security Assessment Report template loaded', 'info');
+  });
+
+  dom.btnOpenSnippetsBar.addEventListener('click', () => {
+    dom.cheatsheetModal.classList.add('open');
   });
 
   dom.btnClearEditor.addEventListener('click', () => {
@@ -278,6 +540,7 @@ function setupEditorEvents() {
       dom.markdownEditor.value = '';
       renderMarkdown();
       updateEditorStats();
+      showToast('Editor Cleared', 'Workspace reset', 'info');
     }
   });
 
@@ -293,10 +556,15 @@ function setupEditorEvents() {
     navigator.clipboard.writeText(dom.markdownEditor.value);
     dom.btnCopyMarkdown.innerHTML = `<i data-lucide="check"></i> Copied!`;
     lucide.createIcons();
+    showToast('Copied to Clipboard', 'Raw Markdown copied successfully', 'success');
     setTimeout(() => {
       dom.btnCopyMarkdown.innerHTML = `<i data-lucide="copy"></i> Copy`;
       lucide.createIcons();
     }, 2000);
+  });
+
+  dom.btnDownloadMarkdown.addEventListener('click', () => {
+    downloadMarkdownFile();
   });
 
   // Post to GitHub Button
@@ -318,6 +586,24 @@ function setupEditorEvents() {
         saveDraftToServer();
       }
     }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+      if (state.activeTab === 'studio') {
+        e.preventDefault();
+        applyFormatting('bold');
+      }
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+      if (state.activeTab === 'studio') {
+        e.preventDefault();
+        applyFormatting('italic');
+      }
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if (state.activeTab === 'studio') {
+        e.preventDefault();
+        applyFormatting('link');
+      }
+    }
   });
 }
 
@@ -327,7 +613,7 @@ function renderMarkdown() {
     dom.markdownPreview.innerHTML = `
       <div class="empty-state">
         <i data-lucide="eye" class="empty-icon"></i>
-        <p>Live preview will appear here formatted with GitHub Flavored Markdown.</p>
+        <p>Live preview will appear here formatted with syntax highlighting.</p>
       </div>`;
     lucide.createIcons();
     return;
@@ -338,14 +624,18 @@ function renderMarkdown() {
 function updateEditorStats() {
   const text = dom.markdownEditor.value.trim();
   const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  const chars = text.length;
   const readingTime = Math.max(1, Math.ceil(words / 200));
+
   dom.wordCountLabel.textContent = `${words.toLocaleString()} words`;
+  if (dom.charCountLabel) dom.charCountLabel.textContent = `${chars.toLocaleString()} chars`;
   dom.readingTimeLabel.textContent = `${readingTime} min read`;
 }
 
 function setViewMode(mode) {
   state.activeView = mode;
   dom.viewBtns.forEach(btn => {
+    if (btn.id === 'btnToggleZen') return;
     btn.classList.toggle('active', btn.getAttribute('data-view') === mode);
   });
   dom.panesWrapper.className = `studio-panes-wrapper ${mode}-mode`;
@@ -356,6 +646,35 @@ function updateCommitMessageSuggestion() {
   const title = dom.titleInput.value.trim() || dom.filenameInput.value.trim();
   dom.commitMsgInput.value = `feat(notes): Day ${String(day).padStart(2, '0')} - ${title}`;
 }
+
+function downloadMarkdownFile() {
+  const content = dom.markdownEditor.value;
+  const filename = dom.filenameInput.value || 'note.md';
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Downloaded File', `${filename} saved to downloads folder`, 'success');
+}
+
+// Global Snippet Inserter
+window.insertSnippet = (code) => {
+  const textarea = dom.markdownEditor;
+  const snippet = `\n\`\`\`bash\n${code}\n\`\`\`\n`;
+  const start = textarea.selectionStart;
+  textarea.setRangeText(snippet, start, start, 'end');
+  textarea.focus();
+  renderMarkdown();
+  updateEditorStats();
+  dom.cheatsheetModal.classList.remove('open');
+  showToast('Snippet Inserted', code, 'success');
+  soundFx.playBeep(600, 0.08);
+};
 
 // Templates
 function insert5QuestionsTemplate() {
@@ -653,7 +972,7 @@ function restoreLocalDraft() {
 async function saveDraftToServer() {
   const content = dom.markdownEditor.value;
   if (!content.trim()) {
-    alert('Cannot save an empty note as draft.');
+    showToast('Empty Note', 'Cannot save an empty note as draft.', 'error');
     return;
   }
 
@@ -678,11 +997,13 @@ async function saveDraftToServer() {
       state.currentDraftId = result.draft.id;
       dom.draftStatusText.textContent = `Saved to drafts list at ${new Date().toLocaleTimeString()}`;
       soundFx.playBeep(600, 0.1);
+      showToast('Draft Saved', `Saved "${payload.title}" safely`, 'success');
       await loadDrafts();
     }
   } catch (err) {
     console.error('Failed to save draft to server:', err);
     autoSaveLocalDraft();
+    showToast('Saved Locally', 'Saved to browser local storage', 'info');
   }
 }
 
@@ -748,6 +1069,7 @@ window.loadDraftIntoEditor = (draftId) => {
   updateEditorStats();
   dom.draftsModal.classList.remove('open');
   dom.draftStatusText.textContent = `Loaded draft: ${draft.title}`;
+  showToast('Draft Loaded', `Loaded "${draft.title}" into editor`, 'info');
   soundFx.playBeep(550, 0.1);
 };
 
@@ -757,6 +1079,7 @@ window.deleteDraftItem = async (draftId) => {
     await fetch(`/api/draft/${draftId}`, { method: 'DELETE' });
     await loadDrafts();
     renderDraftsList();
+    showToast('Draft Deleted', 'Draft removed from storage', 'info');
   } catch (err) {
     console.error(err);
   }
@@ -768,7 +1091,7 @@ window.deleteDraftItem = async (draftId) => {
 async function publishNoteToGitHub() {
   const content = dom.markdownEditor.value.trim();
   if (!content) {
-    alert('Please enter your learning notes before publishing to GitHub.');
+    showToast('Validation Error', 'Please enter learning notes before committing.', 'error');
     return;
   }
 
@@ -799,7 +1122,7 @@ async function publishNoteToGitHub() {
 
     const result = await res.json();
     if (!result.success) {
-      alert(`GitHub Push Error: ${result.error}`);
+      showToast('GitHub Push Error', result.error, 'error', 6000);
       return;
     }
 
@@ -810,8 +1133,8 @@ async function publishNoteToGitHub() {
     // Victory sound and confetti
     soundFx.playVictory();
     confetti({
-      particleCount: 120,
-      spread: 80,
+      particleCount: 140,
+      spread: 90,
       origin: { y: 0.6 }
     });
 
@@ -820,8 +1143,10 @@ async function publishNoteToGitHub() {
     dom.successFileLink.textContent = result.relativePath;
     dom.successCommitLink.href = result.commitUrl;
     dom.successCommitLink.textContent = `Commit #${result.commitHash}`;
-    dom.successDesc.textContent = `Day ${day} note successfully saved in ${folder}/${filename} and pushed to origin/main on GitHub!`;
+    dom.successDesc.textContent = `Day ${day} note successfully committed and pushed to origin/main on GitHub!`;
     dom.successModal.classList.add('open');
+
+    showToast('Pushed to GitHub!', `${result.relativePath} committed (#${result.commitHash})`, 'success');
 
     // Refresh application state
     await Promise.all([
@@ -832,7 +1157,7 @@ async function publishNoteToGitHub() {
     ]);
 
   } catch (err) {
-    alert(`Network Error: ${err.message}`);
+    showToast('Network Error', err.message, 'error');
   } finally {
     dom.btnPostToGitHub.disabled = false;
     dom.btnPostToGitHub.innerHTML = `<i data-lucide="rocket"></i> <span>POST & COMMIT TO GITHUB</span>`;
@@ -841,7 +1166,7 @@ async function publishNoteToGitHub() {
 }
 
 // ==========================================
-// 90-Day Roadmap & Tracker
+// 90-Day Roadmap, Matrix & Progress
 // ==========================================
 async function loadRoadmap() {
   try {
@@ -849,6 +1174,7 @@ async function loadRoadmap() {
     state.roadmap = await res.json();
     populateDaySelect();
     renderRoadmapWeeks();
+    renderVisualMatrix();
   } catch (err) {
     console.warn('Could not load roadmap:', err);
   }
@@ -859,6 +1185,35 @@ function populateDaySelect() {
   dom.daySelect.innerHTML = state.roadmap.days.map(d => `
     <option value="${d.day}">Day ${String(d.day).padStart(2, '0')}: ${escapeHtml(d.title.substring(0, 40))}${d.title.length > 40 ? '...' : ''}</option>
   `).join('');
+}
+
+// Render 90-Day Visual Matrix / Punch Card
+function renderVisualMatrix() {
+  if (!state.roadmap || !dom.matrixGridContainer) return;
+  const completed = (state.progress && state.progress.completedDays) || [];
+  const currentActiveDay = (state.progress && state.progress.activeDay) || 2;
+
+  let html = '';
+  for (let i = 1; i <= 90; i++) {
+    const isDone = completed.includes(i);
+    const isCurrent = i === currentActiveDay && !isDone;
+    const dayData = state.roadmap.days.find(d => d.day === i);
+    const title = dayData ? dayData.title : `Day ${i}`;
+
+    let statusClass = 'pending';
+    if (isDone) statusClass = 'done';
+    else if (isCurrent) statusClass = 'current';
+
+    html += `
+      <div class="matrix-cell ${statusClass}" 
+           onclick="startWritingForDay(${i})" 
+           title="Day ${i}: ${escapeHtml(title)} [${statusClass.toUpperCase()}]">
+        ${i}
+      </div>
+    `;
+  }
+
+  dom.matrixGridContainer.innerHTML = html;
 }
 
 function renderRoadmapWeeks() {
@@ -942,12 +1297,15 @@ window.toggleDayProgress = async (dayNum) => {
   const idx = state.progress.completedDays.indexOf(dayNum);
   if (idx >= 0) {
     state.progress.completedDays.splice(idx, 1);
+    showToast('Progress Updated', `Day ${dayNum} marked incomplete`, 'info');
   } else {
     state.progress.completedDays.push(dayNum);
     soundFx.playBeep(650, 0.1);
+    showToast('Goal Accomplished!', `Day ${dayNum} marked completed`, 'success');
   }
 
   renderRoadmapWeeks();
+  renderVisualMatrix();
   updateProgressDisplays();
 
   try {
@@ -967,6 +1325,7 @@ window.startWritingForDay = (dayNum) => {
   dom.daySelect.dispatchEvent(event);
   insert5QuestionsTemplate();
   switchTab('studio');
+  showToast('Ready to Write', `Configured Studio for Day ${dayNum}`, 'info');
 };
 
 // Phase Filters
@@ -984,6 +1343,7 @@ async function loadProgress() {
     const res = await fetch('/api/progress');
     state.progress = await res.json();
     updateProgressDisplays();
+    renderVisualMatrix();
   } catch (err) {
     console.warn('Could not load progress:', err);
   }
@@ -994,22 +1354,45 @@ function updateProgressDisplays() {
   const count = state.progress.completedDays ? state.progress.completedDays.length : 0;
   const percent = ((count / 90) * 100).toFixed(1);
   const remaining = 90 - count;
+  const streak = state.progress.currentStreak || 1;
 
   dom.roadmapPercent.textContent = `${percent}%`;
   dom.roadmapProgressBar.style.width = `${Math.max(1, percent)}%`;
   dom.completedCountText.textContent = `${count} of 90 Days Completed`;
   dom.daysRemainingText.textContent = `${remaining} Days Remaining`;
   dom.roadmapProgressBadge.textContent = `Day ${count}/90`;
+  if (dom.streakVal) dom.streakVal.textContent = `🔥 ${streak} DAY${streak > 1 ? 'S' : ''}`;
 }
 
 // ==========================================
-// 30-Minute Protocol Timer
+// 30-Minute Protocol Timer & Ambient Sound
 // ==========================================
 function setupTimer() {
   dom.btnTimerToggle.addEventListener('click', toggleTimer);
   dom.btnTimerReset.addEventListener('click', resetTimer);
   dom.btnTimerSoundTest.addEventListener('click', () => {
     soundFx.playBeep(700, 0.2);
+    showToast('Audio Check', 'Synthesized audio test passed', 'info');
+  });
+}
+
+function setupAmbientAudio() {
+  if (!dom.btnToggleAmbient) return;
+
+  dom.btnToggleAmbient.addEventListener('click', () => {
+    const vol = parseFloat(dom.ambientVolume.value) || 0.25;
+    const isPlaying = soundFx.toggleAmbient(vol);
+
+    dom.ambientIcon.setAttribute('data-lucide', isPlaying ? 'volume-2' : 'volume-x');
+    dom.ambientText.textContent = isPlaying ? 'Mute Focus Drone' : 'Turn On Ambient';
+    dom.btnToggleAmbient.classList.toggle('active', isPlaying);
+    lucide.createIcons();
+    showToast('Cyber Ambient Focus', isPlaying ? 'Synthesized focus drone active' : 'Ambient muted', 'info');
+  });
+
+  dom.ambientVolume.addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value);
+    soundFx.setAmbientVolume(val);
   });
 }
 
@@ -1027,6 +1410,7 @@ function startTimer() {
   dom.timerToggleIcon.setAttribute('data-lucide', 'pause');
   lucide.createIcons();
   soundFx.playBeep(520, 0.12);
+  showToast('Timer Started', '30-minute practice session started. Focus, Operator.', 'info');
 
   state.timer.intervalId = setInterval(() => {
     if (state.timer.remainingSeconds > 0) {
@@ -1036,8 +1420,8 @@ function startTimer() {
       // Finished 30 minutes!
       pauseTimer();
       soundFx.playVictory();
-      confetti({ particleCount: 80, spread: 60 });
-      alert("🎯 30-Minute Practice Protocol Completed! Excellent focus, Operator.");
+      confetti({ particleCount: 100, spread: 70 });
+      showToast('Session Complete!', '🎯 30-Minute Practice Protocol Completed!', 'success', 8000);
     }
   }, 1000);
 }
@@ -1060,6 +1444,7 @@ function resetTimer() {
   dom.timerToggleIcon.setAttribute('data-lucide', 'play');
   lucide.createIcons();
   updateTimerUI();
+  showToast('Timer Reset', 'Timer returned to 30:00', 'info');
 }
 
 function updateTimerUI() {
@@ -1067,10 +1452,6 @@ function updateTimerUI() {
   const secs = state.timer.remainingSeconds % 60;
   dom.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
-  // Calculate Phase:
-  // Phase 1 (Recall): 30:00 to 25:00 (1800s to 1500s)
-  // Phase 2 (Study): 25:00 to 10:00 (1500s to 600s)
-  // Phase 3 (Practice): 10:00 to 00:00 (600s to 0s)
   const rem = state.timer.remainingSeconds;
   let newPhase = 1;
   let phaseText = "Phase 1: Active Recall (5m)";
@@ -1090,6 +1471,7 @@ function updateTimerUI() {
   if (newPhase !== state.timer.currentPhase) {
     state.timer.currentPhase = newPhase;
     soundFx.playBeep(880, 0.25, 'triangle');
+    showToast('Phase Transition', phaseText, 'info');
   }
 
   dom.timerCurrentPhaseName.textContent = phaseText;
@@ -1152,6 +1534,7 @@ dom.notesSearchInput.addEventListener('input', (e) => {
 dom.btnRefreshNotes.addEventListener('click', async () => {
   soundFx.playBeep(500, 0.08);
   await loadNotes();
+  showToast('Notes Refreshed', `Loaded ${state.notes.length} notes from repository`, 'info');
 });
 
 window.inspectNote = async (relativePath) => {
@@ -1196,6 +1579,7 @@ function loadExistingNoteIntoStudio(relPath, content) {
   updateEditorStats();
   updateCommitMessageSuggestion();
   switchTab('studio');
+  showToast('Note Loaded', `Loaded "${filename}" into Studio for editing`, 'info');
 }
 
 // ==========================================
@@ -1235,9 +1619,21 @@ function setupModals() {
     dom.successModal.classList.remove('open');
   });
 
+  if (dom.btnOpenCheatsheet) {
+    dom.btnOpenCheatsheet.addEventListener('click', () => {
+      dom.cheatsheetModal.classList.add('open');
+    });
+  }
+  if (dom.btnCloseCheatsheetModal) {
+    dom.btnCloseCheatsheetModal.addEventListener('click', () => {
+      dom.cheatsheetModal.classList.remove('open');
+    });
+  }
+
   window.addEventListener('click', (e) => {
     if (e.target === dom.draftsModal) dom.draftsModal.classList.remove('open');
     if (e.target === dom.successModal) dom.successModal.classList.remove('open');
+    if (e.target === dom.cheatsheetModal) dom.cheatsheetModal.classList.remove('open');
   });
 }
 
