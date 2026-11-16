@@ -202,7 +202,7 @@ const dom = {
   panesWrapper: document.getElementById('panesWrapper'),
   viewBtns: document.querySelectorAll('.view-btn'),
 
-  // Studio Buttons
+  // Studio Buttons & Toolbar
   btnLoad5Questions: document.getElementById('btnLoad5Questions'),
   btnLoadDay1: document.getElementById('btnLoadDay1'),
   btnLoadLabTemplate: document.getElementById('btnLoadLabTemplate'),
@@ -215,13 +215,32 @@ const dom = {
   btnDownloadMarkdown: document.getElementById('btnDownloadMarkdown'),
   btnToggleZen: document.getElementById('btnToggleZen'),
 
-  // Days Sidebar Elements
-  daysSidebar: document.getElementById('daysSidebar'),
-  daysSidebarList: document.getElementById('daysSidebarList'),
-  daysSearchInput: document.getElementById('daysSearchInput'),
-  sidebarCountBadge: document.getElementById('sidebarCountBadge'),
-  btnToggleDaysSidebar: document.getElementById('btnToggleDaysSidebar'),
-  btnToggleDaysSidebarHeader: document.getElementById('btnToggleDaysSidebarHeader'),
+  // Course Lesson Nav Elements
+  btnPrevDay: document.getElementById('btnPrevDay'),
+  btnNextDay: document.getElementById('btnNextDay'),
+  btnToggleDayStatus: document.getElementById('btnToggleDayStatus'),
+  dayStatusIcon: document.getElementById('dayStatusIcon'),
+  dayStatusText: document.getElementById('dayStatusText'),
+
+  // Daily Course Mission & Tasks Card Elements
+  courseTaskCard: document.getElementById('courseTaskCard'),
+  btnToggleTaskCard: document.getElementById('btnToggleTaskCard'),
+  taskToggleIcon: document.getElementById('taskToggleIcon'),
+  taskWeekBadge: document.getElementById('taskWeekBadge'),
+  taskPhaseBadge: document.getElementById('taskPhaseBadge'),
+  taskGoalText: document.getElementById('taskGoalText'),
+  taskResourceLink: document.getElementById('taskResourceLink'),
+  taskResourceName: document.getElementById('taskResourceName'),
+  task1Desc: document.getElementById('task1Desc'),
+  task2Desc: document.getElementById('task2Desc'),
+  task3Desc: document.getElementById('task3Desc'),
+  taskCheck1: document.getElementById('taskCheck1'),
+  taskCheck2: document.getElementById('taskCheck2'),
+  taskCheck3: document.getElementById('taskCheck3'),
+
+  // Toolbar & Drawer
+  btnToggleMetadata: document.getElementById('btnToggleMetadata'),
+  metadataDrawer: document.getElementById('metadataDrawer'),
 
   // Roadmap Elements
   weeksAccordionContainer: document.getElementById('weeksAccordionContainer'),
@@ -530,24 +549,29 @@ function setupEditorEvents() {
     }
   });
 
-  // Template buttons
-  dom.btnLoad5Questions.addEventListener('click', () => {
-    soundFx.playBeep(450, 0.08);
-    insert5QuestionsTemplate();
-    showToast('Template Loaded', '5-Question Framework inserted into editor', 'info');
-  });
+  if (dom.btnLoad5Questions) {
+    dom.btnLoad5Questions.addEventListener('click', () => {
+      soundFx.playBeep(450, 0.08);
+      insert5QuestionsTemplate();
+      showToast('Template Loaded', '5-Question Framework inserted into editor', 'info');
+    });
+  }
 
-  dom.btnLoadDay1.addEventListener('click', () => {
-    soundFx.playBeep(520, 0.1);
-    loadDay1Kickoff();
-    showToast('Day 1 Kickoff', 'Computer & Networking Fundamentals loaded', 'info');
-  });
+  if (dom.btnLoadDay1) {
+    dom.btnLoadDay1.addEventListener('click', () => {
+      soundFx.playBeep(520, 0.1);
+      loadDay1Kickoff();
+      showToast('Day 1 Kickoff', 'Computer & Networking Fundamentals loaded', 'info');
+    });
+  }
 
-  dom.btnLoadLabTemplate.addEventListener('click', () => {
-    soundFx.playBeep(400, 0.08);
-    loadLabReportTemplate();
-    showToast('Lab Report Loaded', 'Security Assessment Report template loaded', 'info');
-  });
+  if (dom.btnLoadLabTemplate) {
+    dom.btnLoadLabTemplate.addEventListener('click', () => {
+      soundFx.playBeep(400, 0.08);
+      loadLabReportTemplate();
+      showToast('Lab Report Loaded', 'Security Assessment Report template loaded', 'info');
+    });
+  }
 
   dom.btnOpenSnippetsBar.addEventListener('click', () => {
     dom.cheatsheetModal.classList.add('open');
@@ -590,19 +614,60 @@ function setupEditorEvents() {
     publishNoteToGitHub();
   });
 
-  // Days Sidebar Toggle
-  const toggleSidebar = () => {
-    if (dom.daysSidebar) dom.daysSidebar.classList.toggle('collapsed');
-  };
-  if (dom.btnToggleDaysSidebar) dom.btnToggleDaysSidebar.addEventListener('click', toggleSidebar);
-  if (dom.btnToggleDaysSidebarHeader) dom.btnToggleDaysSidebarHeader.addEventListener('click', toggleSidebar);
-
-  // Real-time Days Search Filter
-  if (dom.daysSearchInput) {
-    dom.daysSearchInput.addEventListener('input', (e) => {
-      renderDaysSidebar(e.target.value);
+  // Course Lesson Navigation (Prev / Next Day)
+  if (dom.btnPrevDay) {
+    dom.btnPrevDay.addEventListener('click', () => {
+      const current = parseInt(dom.daySelect.value, 10) || 1;
+      if (current > 1) selectDayAndLoadContent(current - 1);
     });
   }
+  if (dom.btnNextDay) {
+    dom.btnNextDay.addEventListener('click', () => {
+      const current = parseInt(dom.daySelect.value, 10) || 1;
+      if (current < 90) selectDayAndLoadContent(current + 1);
+    });
+  }
+
+  // Toggle Day Status from Workspace Header
+  if (dom.btnToggleDayStatus) {
+    dom.btnToggleDayStatus.addEventListener('click', () => {
+      const dayNum = parseInt(dom.daySelect.value, 10) || 1;
+      toggleDayProgress(dayNum);
+    });
+  }
+
+  // Toggle Daily Tasks Card Collapse/Expand
+  if (dom.btnToggleTaskCard) {
+    dom.btnToggleTaskCard.addEventListener('click', () => {
+      if (dom.courseTaskCard) {
+        dom.courseTaskCard.classList.toggle('collapsed');
+        const isCollapsed = dom.courseTaskCard.classList.contains('collapsed');
+        if (dom.taskToggleIcon) {
+          dom.taskToggleIcon.setAttribute('data-lucide', isCollapsed ? 'chevron-down' : 'chevron-up');
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    });
+  }
+
+  // Toggle Custom Metadata / File Path Drawer
+  if (dom.btnToggleMetadata) {
+    dom.btnToggleMetadata.addEventListener('click', () => {
+      if (dom.metadataDrawer) dom.metadataDrawer.classList.toggle('open');
+    });
+  }
+
+  // Interactive Daily Checklist Checkboxes
+  [1, 2, 3].forEach(idx => {
+    const chk = dom[`taskCheck${idx}`];
+    if (chk) {
+      chk.addEventListener('change', () => {
+        const day = parseInt(dom.daySelect.value, 10) || 1;
+        chk.closest('.task-item')?.classList.toggle('checked', chk.checked);
+        saveDayTasksState(day);
+      });
+    }
+  });
 
   // Expand / Collapse All Weeks in Roadmap
   if (dom.btnExpandAllWeeks) {
@@ -730,6 +795,36 @@ window.insertSnippet = (code) => {
   soundFx.playBeep(600, 0.08);
 };
 
+// Task Checklist State Persistence
+function saveDayTasksState(dayNum) {
+  try {
+    const stateObj = {
+      t1: dom.taskCheck1 ? dom.taskCheck1.checked : false,
+      t2: dom.taskCheck2 ? dom.taskCheck2.checked : false,
+      t3: dom.taskCheck3 ? dom.taskCheck3.checked : false
+    };
+    localStorage.setItem(`redteam_day_tasks_${dayNum}`, JSON.stringify(stateObj));
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
+function loadDayTasksState(dayNum) {
+  try {
+    const raw = localStorage.getItem(`redteam_day_tasks_${dayNum}`);
+    const stateObj = raw ? JSON.parse(raw) : { t1: false, t2: false, t3: false };
+    [1, 2, 3].forEach(idx => {
+      const chk = dom[`taskCheck${idx}`];
+      if (chk) {
+        chk.checked = !!stateObj[`t${idx}`];
+        chk.closest('.task-item')?.classList.toggle('checked', chk.checked);
+      }
+    });
+  } catch (e) {
+    console.warn(e);
+  }
+}
+
 // Select Day & Automatically Load Full Content
 async function selectDayAndLoadContent(dayNum) {
   if (!state.roadmap && typeof window !== 'undefined' && window.ROADMAP_DATA) {
@@ -746,15 +841,37 @@ async function selectDayAndLoadContent(dayNum) {
   dom.titleInput.value = dayData.title;
   updateCommitMessageSuggestion();
 
-  // Update active state in Days Sidebar
-  document.querySelectorAll('.days-sidebar-item').forEach(el => {
-    const elDay = parseInt(el.getAttribute('data-day'), 10);
-    el.classList.toggle('active', elDay === dayNum);
-  });
-  const activeSidebarEl = document.querySelector(`.days-sidebar-item[data-day="${dayNum}"]`);
-  if (activeSidebarEl) {
-    activeSidebarEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  // Update Prev / Next Buttons
+  if (dom.btnPrevDay) dom.btnPrevDay.disabled = dayNum <= 1;
+  if (dom.btnNextDay) dom.btnNextDay.disabled = dayNum >= 90;
+
+  // Update Day Completion Status Button
+  const isCompleted = state.progress && state.progress.completedDays && state.progress.completedDays.includes(dayNum);
+  if (dom.btnToggleDayStatus) {
+    dom.btnToggleDayStatus.classList.toggle('completed', isCompleted);
+    if (dom.dayStatusText) dom.dayStatusText.textContent = isCompleted ? 'Completed ✓' : 'Mark Complete';
+    if (dom.dayStatusIcon) {
+      dom.dayStatusIcon.setAttribute('data-lucide', isCompleted ? 'check-circle' : 'circle');
+      if (window.lucide) lucide.createIcons();
+    }
   }
+
+  // Update Course Mission & Tasks Checklist Card
+  const weekInfo = state.roadmap.weeks ? state.roadmap.weeks.find(w => w.week === dayData.week) : null;
+  const phaseInfo = state.roadmap.phases ? state.roadmap.phases.find(p => p.id === (weekInfo ? weekInfo.phaseId : 1)) : null;
+
+  if (dom.taskWeekBadge) dom.taskWeekBadge.textContent = `WEEK ${String(dayData.week).padStart(2, '0')}`;
+  if (dom.taskPhaseBadge) dom.taskPhaseBadge.textContent = phaseInfo ? phaseInfo.name : 'Technical Foundations';
+  if (dom.taskGoalText) dom.taskGoalText.textContent = weekInfo ? weekInfo.goal : 'Understand the technical foundations';
+  if (dom.taskResourceLink && weekInfo) {
+    dom.taskResourceLink.href = weekInfo.resourceUrl || '#';
+    if (dom.taskResourceName) dom.taskResourceName.textContent = weekInfo.resource || 'Official Resource';
+  }
+  if (dom.task1Desc) dom.task1Desc.textContent = `Study "${dayData.title}" in documentation & resources (15 min).`;
+  if (dom.task2Desc) dom.task2Desc.textContent = `Hands-on practice & terminal diagnostics for ${dayData.title} (10 min).`;
+  if (dom.task3Desc) dom.task3Desc.textContent = `Document understanding in the 5 Core Questions below (5 min).`;
+
+  loadDayTasksState(dayNum);
 
   // 1. Look for existing committed note in repository
   const expectedPath = `${dayData.folder}/${dayData.file}`;
@@ -795,9 +912,6 @@ async function selectDayAndLoadContent(dayNum) {
   }
 
   // 3. Auto-populate structured curriculum template for this day
-  const weekInfo = state.roadmap.weeks ? state.roadmap.weeks.find(w => w.week === dayData.week) : null;
-  const phaseInfo = state.roadmap.phases ? state.roadmap.phases.find(p => p.id === (weekInfo ? weekInfo.phaseId : 1)) : null;
-
   const defaultTemplate = `# Day ${String(dayNum).padStart(2, '0')}: ${dayData.title}
 
 - **Date:** ${new Date().toISOString().split('T')[0]}
@@ -1404,7 +1518,7 @@ window.handleSidebarDayClick = (dayNum) => {
 function populateDaySelect() {
   if (!state.roadmap || !state.roadmap.days) return;
   dom.daySelect.innerHTML = state.roadmap.days.map(d => `
-    <option value="${d.day}">Day ${String(d.day).padStart(2, '0')}: ${escapeHtml(d.title.substring(0, 40))}${d.title.length > 40 ? '...' : ''}</option>
+    <option value="${d.day}">Day ${String(d.day).padStart(2, '0')}: ${escapeHtml(d.title)} (Week ${d.week})</option>
   `).join('');
 }
 
@@ -1525,6 +1639,16 @@ window.toggleDayProgress = async (dayNum) => {
     showToast('Goal Accomplished!', `Day ${dayNum} marked completed`, 'success');
   }
 
+  const isDoneNow = state.progress.completedDays.includes(dayNum);
+  if (dom.btnToggleDayStatus && parseInt(dom.daySelect.value, 10) === dayNum) {
+    dom.btnToggleDayStatus.classList.toggle('completed', isDoneNow);
+    if (dom.dayStatusText) dom.dayStatusText.textContent = isDoneNow ? 'Completed ✓' : 'Mark Complete';
+    if (dom.dayStatusIcon) {
+      dom.dayStatusIcon.setAttribute('data-lucide', isDoneNow ? 'check-circle' : 'circle');
+      if (window.lucide) lucide.createIcons();
+    }
+  }
+
   renderRoadmapWeeks();
   renderVisualMatrix();
   updateProgressDisplays();
@@ -1597,20 +1721,22 @@ function setupAmbientAudio() {
   if (!dom.btnToggleAmbient) return;
 
   dom.btnToggleAmbient.addEventListener('click', () => {
-    const vol = parseFloat(dom.ambientVolume.value) || 0.25;
+    const vol = (dom.ambientVolume && parseFloat(dom.ambientVolume.value)) || 0.25;
     const isPlaying = soundFx.toggleAmbient(vol);
 
-    dom.ambientIcon.setAttribute('data-lucide', isPlaying ? 'volume-2' : 'volume-x');
-    dom.ambientText.textContent = isPlaying ? 'Mute Focus Drone' : 'Turn On Ambient';
+    if (dom.ambientIcon) dom.ambientIcon.setAttribute('data-lucide', isPlaying ? 'volume-2' : 'volume-x');
+    if (dom.ambientText) dom.ambientText.textContent = isPlaying ? 'Mute Focus Drone' : 'Turn On Ambient';
     dom.btnToggleAmbient.classList.toggle('active', isPlaying);
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
     showToast('Cyber Ambient Focus', isPlaying ? 'Synthesized focus drone active' : 'Ambient muted', 'info');
   });
 
-  dom.ambientVolume.addEventListener('input', (e) => {
-    const val = parseFloat(e.target.value);
-    soundFx.setAmbientVolume(val);
-  });
+  if (dom.ambientVolume) {
+    dom.ambientVolume.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      soundFx.setAmbientVolume(val);
+    });
+  }
 }
 
 function toggleTimer() {
