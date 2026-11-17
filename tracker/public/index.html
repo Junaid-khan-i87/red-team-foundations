@@ -56,10 +56,6 @@
         <button class="btn btn-secondary btn-icon-only" id="btnThemeToggle" title="Switch to White Theme" aria-label="Toggle Theme">
           <i data-lucide="sun" id="themeToggleIcon"></i>
         </button>
-        <button class="btn btn-secondary btn-sm hide-on-mobile" id="btnOpenCheatsheet" title="Command & Syntax Snippets">
-          <i data-lucide="terminal"></i>
-          <span>Snippets</span>
-        </button>
         <button class="btn btn-primary btn-sm btn-new-note" id="btnQuickNewNote" title="Write Today's Note">
           <i data-lucide="plus"></i>
           <span class="hide-on-compact">New Note</span>
@@ -144,12 +140,6 @@
           </div>
         </button>
       </div>
-      <div class="mobile-nav-footer">
-        <button class="btn btn-secondary btn-sm w-100" id="btnMobileSnippets">
-          <i data-lucide="terminal"></i>
-          <span>Command & Syntax Snippets</span>
-        </button>
-      </div>
     </div>
   </header>
 
@@ -208,6 +198,7 @@
               <span class="course-phase" id="taskPhaseBadge">Phase 1: Technical Foundations</span>
             </div>
             <div class="course-task-actions">
+              <span class="task-counter-chip" id="taskCounterChip">0/3 Tasks</span>
               <a href="https://www.netacad.com/" target="_blank" rel="noopener noreferrer" class="resource-link-chip" id="taskResourceLink">
                 <i data-lucide="external-link"></i> <span id="taskResourceName">Official Resource</span>
               </a>
@@ -246,9 +237,6 @@
             </button>
             <button class="btn btn-ghost btn-xs" id="btnLoadDay1" title="Load Day 1 Sample Note">
               <i data-lucide="sparkles"></i> <span>Sample Note</span>
-            </button>
-            <button class="btn btn-ghost btn-xs" id="btnOpenSnippetsBar" title="Open Command Snippets">
-              <i data-lucide="code"></i> <span>Snippets</span>
             </button>
             <button class="btn btn-ghost btn-xs hide-on-mobile" id="btnToggleMetadata" title="Customize Target File & Path">
               <i data-lucide="sliders"></i> <span>File Path</span>
@@ -704,112 +692,6 @@
       </div>
     </section>
   </main>
-
-  <!-- ==================== CHEAT SHEET MODAL ==================== -->
-  <div class="modal-overlay" id="cheatsheetModal">
-    <div class="modal-card modal-large">
-      <div class="modal-header">
-        <div class="modal-title">
-          <i data-lucide="terminal"></i>
-          <h3>Quick Snippet & Command Library</h3>
-        </div>
-        <button class="modal-close" id="btnCloseCheatsheetModal" aria-label="Close modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="snippets-grid">
-          <!-- Networking -->
-          <div class="snippet-category-card">
-            <div class="snippet-cat-title"><i data-lucide="activity"></i> Networking & DNS</div>
-            <div class="snippet-item">
-              <div class="snippet-code">dig domain.com +noall +answer</div>
-              <p>Resolve DNS A record concisely.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('dig domain.com +noall +answer')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">dig axfr @ns1.domain.com domain.com</div>
-              <p>Attempt unrestricted DNS Zone Transfer.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('dig axfr @ns1.domain.com domain.com')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">sudo tcpdump -i any -nn -c 10 port 53</div>
-              <p>Live capture 10 DNS packets on any interface.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('sudo tcpdump -i any -nn -c 10 port 53')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">nc -zv 192.168.1.1 22 80 443</div>
-              <p>Fast banner check across ports.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('nc -zv 192.168.1.1 22 80 443')">Insert</button>
-            </div>
-          </div>
-
-          <!-- Linux CLI -->
-          <div class="snippet-category-card">
-            <div class="snippet-cat-title"><i data-lucide="terminal"></i> Linux PrivEsc & Recon</div>
-            <div class="snippet-item">
-              <div class="snippet-code">find / -perm -4000 -type f 2>/dev/null</div>
-              <p>Find all SUID binaries on system.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('find / -perm -4000 -type f 2>/dev/null')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">grep -rni "password" /var/www/ 2>/dev/null</div>
-              <p>Recursive search for exposed secrets in webroot.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('grep -rni \"password\" /var/www/ 2>/dev/null')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">ss -tulpn</div>
-              <p>List listening ports and binding processes.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('ss -tulpn')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">sudo -l</div>
-              <p>Check allowed sudo commands for current user.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('sudo -l')">Insert</button>
-            </div>
-          </div>
-
-          <!-- Windows & PowerShell -->
-          <div class="snippet-category-card">
-            <div class="snippet-cat-title"><i data-lucide="cpu"></i> Windows & PowerShell</div>
-            <div class="snippet-item">
-              <div class="snippet-code">Get-Process | Sort-Object CPU -Descending | Select-Object -First 5</div>
-              <p>Top CPU consuming processes.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('Get-Process | Sort-Object CPU -Descending | Select-Object -First 5')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">Test-NetConnection -ComputerName 10.0.0.1 -Port 445</div>
-              <p>Test remote SMB port connectivity.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('Test-NetConnection -ComputerName 10.0.0.1 -Port 445')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">whoami /priv</div>
-              <p>List user token privileges.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('whoami /priv')">Insert</button>
-            </div>
-          </div>
-
-          <!-- Web & Burp -->
-          <div class="snippet-category-card">
-            <div class="snippet-cat-title"><i data-lucide="globe"></i> Web & OWASP Testing</div>
-            <div class="snippet-item">
-              <div class="snippet-code">curl -Iv https://target.local</div>
-              <p>Verbose HTTP headers and TLS check.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('curl -Iv https://target.local')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">' OR 1=1--</div>
-              <p>Classic SQL injection auth bypass payload.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('\' OR 1=1--')">Insert</button>
-            </div>
-            <div class="snippet-item">
-              <div class="snippet-code">&lt;script&gt;alert(document.domain)&lt;/script&gt;</div>
-              <p>Basic XSS proof-of-concept string.</p>
-              <button class="btn btn-ghost btn-xs" onclick="insertSnippet('<script>alert(document.domain)</script>')">Insert</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- ==================== DRAFTS MODAL DRAWER ==================== -->
   <div class="modal-overlay" id="draftsModal">

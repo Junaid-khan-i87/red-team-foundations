@@ -247,6 +247,7 @@ const dom = {
   taskCheck1: document.getElementById('taskCheck1'),
   taskCheck2: document.getElementById('taskCheck2'),
   taskCheck3: document.getElementById('taskCheck3'),
+  taskCounterChip: document.getElementById('taskCounterChip'),
 
   // Toolbar & Drawer
   btnToggleMetadata: document.getElementById('btnToggleMetadata'),
@@ -691,9 +692,11 @@ function setupEditorEvents() {
     });
   }
 
-  dom.btnOpenSnippetsBar.addEventListener('click', () => {
-    dom.cheatsheetModal.classList.add('open');
-  });
+  if (dom.btnOpenSnippetsBar && dom.cheatsheetModal) {
+    dom.btnOpenSnippetsBar.addEventListener('click', () => {
+      dom.cheatsheetModal.classList.add('open');
+    });
+  }
 
   dom.btnClearEditor.addEventListener('click', () => {
     if (confirm('Are you sure you want to clear the editor?')) {
@@ -783,6 +786,7 @@ function setupEditorEvents() {
         const day = parseInt(dom.daySelect.value, 10) || 1;
         chk.closest('.task-item')?.classList.toggle('checked', chk.checked);
         saveDayTasksState(day);
+        updateTaskCounter();
       });
     }
   });
@@ -908,7 +912,7 @@ window.insertSnippet = (code) => {
   textarea.focus();
   renderMarkdown();
   updateEditorStats();
-  dom.cheatsheetModal.classList.remove('open');
+  if (dom.cheatsheetModal) dom.cheatsheetModal.classList.remove('open');
   showToast('Snippet Inserted', code, 'success');
   soundFx.playBeep(600, 0.08);
 };
@@ -927,6 +931,22 @@ function saveDayTasksState(dayNum) {
   }
 }
 
+function updateTaskCounter() {
+  const c1 = dom.taskCheck1 && dom.taskCheck1.checked ? 1 : 0;
+  const c2 = dom.taskCheck2 && dom.taskCheck2.checked ? 1 : 0;
+  const c3 = dom.taskCheck3 && dom.taskCheck3.checked ? 1 : 0;
+  const total = c1 + c2 + c3;
+  if (dom.taskCounterChip) {
+    if (total === 3) {
+      dom.taskCounterChip.textContent = '3/3 Done ✓';
+      dom.taskCounterChip.classList.add('all-done');
+    } else {
+      dom.taskCounterChip.textContent = `${total}/3 Tasks`;
+      dom.taskCounterChip.classList.remove('all-done');
+    }
+  }
+}
+
 function loadDayTasksState(dayNum) {
   try {
     const raw = localStorage.getItem(`redteam_day_tasks_${dayNum}`);
@@ -938,6 +958,7 @@ function loadDayTasksState(dayNum) {
         chk.closest('.task-item')?.classList.toggle('checked', chk.checked);
       }
     });
+    updateTaskCounter();
   } catch (e) {
     console.warn(e);
   }
@@ -2085,14 +2106,14 @@ function setupModals() {
     dom.successModal.classList.remove('open');
   });
 
-  if (dom.btnOpenCheatsheet) {
+  if (dom.btnOpenCheatsheet && dom.cheatsheetModal) {
     dom.btnOpenCheatsheet.addEventListener('click', () => {
       dom.cheatsheetModal.classList.add('open');
     });
   }
-  if (dom.btnCloseCheatsheetModal) {
+  if (dom.btnCloseCheatsheetModal && dom.cheatsheetModal) {
     dom.btnCloseCheatsheetModal.addEventListener('click', () => {
-      dom.cheatsheetModal.classList.remove('open');
+      if (dom.cheatsheetModal) dom.cheatsheetModal.classList.remove('open');
     });
   }
 
