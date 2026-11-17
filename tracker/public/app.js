@@ -1463,7 +1463,7 @@ async function loadDrafts() {
   try {
     const res = await fetch('/api/drafts');
     state.drafts = await res.json();
-    dom.draftCountBadge.textContent = state.drafts.length;
+    if (dom.draftCountBadge) dom.draftCountBadge.textContent = state.drafts.length;
   } catch (err) {
     console.warn('Could not load drafts:', err);
   }
@@ -1881,7 +1881,7 @@ function updateProgressDisplays() {
   dom.roadmapProgressBar.style.width = `${Math.max(1, percent)}%`;
   dom.completedCountText.textContent = `${count} of 90 Days Completed`;
   dom.daysRemainingText.textContent = `${remaining} Days Remaining`;
-  dom.roadmapProgressBadge.textContent = `Day ${count}/90`;
+  if (dom.roadmapProgressBadge) dom.roadmapProgressBadge.textContent = `Day ${count}/90`;
   if (dom.mobileRoadmapBadge) dom.mobileRoadmapBadge.textContent = `Day ${count}/90`;
   if (dom.streakVal) {
     dom.streakVal.innerHTML = `🔥 <span class="streak-text-full">${streak} Day${streak > 1 ? 's' : ''} Streak</span><span class="streak-text-short">${streak}d</span>`;
@@ -2018,7 +2018,7 @@ async function loadNotes() {
   try {
     const res = await fetch('/api/notes');
     state.notes = await res.json();
-    dom.notesCountBadge.textContent = `${state.notes.length} Notes`;
+    if (dom.notesCountBadge) dom.notesCountBadge.textContent = `${state.notes.length} Notes`;
     if (dom.mobileNotesBadge) dom.mobileNotesBadge.textContent = `${state.notes.length}`;
     renderNotesTree(state.notes);
   } catch (err) {
