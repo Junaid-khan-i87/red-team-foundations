@@ -181,6 +181,10 @@ function showToast(title, desc, type = 'info', duration = 3500) {
 // DOM Elements
 const dom = {
   // Theme & Mobile Navigation
+  topNav: document.getElementById('topNav'),
+  btnHideNavbar: document.getElementById('btnHideNavbar'),
+  btnRestoreNav: document.getElementById('btnRestoreNav'),
+  activeTabIndicator: document.getElementById('activeTabIndicator'),
   btnThemeToggle: document.getElementById('btnThemeToggle'),
   themeToggleIcon: document.getElementById('themeToggleIcon'),
   btnMobileNavToggle: document.getElementById('btnMobileNavToggle'),
@@ -464,6 +468,19 @@ function setupTabs() {
 
 function switchTab(tabName) {
   state.activeTab = tabName;
+  const tabTitles = {
+    'studio': "Today's Mission",
+    'roadmap': "Course Syllabus",
+    'timer': "30-Min Protocol",
+    'explorer': "Notes Vault",
+    'my-vault': "My Vault",
+    'arsenal': "Resources",
+    'git-settings': "Git Sync",
+    'settings': "GitHub / Vault"
+  };
+  if (dom.activeTabIndicator && tabTitles[tabName]) {
+    dom.activeTabIndicator.textContent = tabTitles[tabName];
+  }
   dom.tabBtns.forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
   });
@@ -657,14 +674,38 @@ function setupEditorEvents() {
     showToast('Distraction-Free Mode', state.isZenFullscreen ? 'Fullscreen active. Press Esc to exit.' : 'Exited fullscreen.', 'info');
   });
 
-  // Esc key exits Zen mode
+  // Hide & Restore Navbar on Desktop / Focus
+  if (dom.btnHideNavbar) {
+    dom.btnHideNavbar.addEventListener('click', () => {
+      dom.topNav?.classList.add('navbar-hidden');
+      dom.btnRestoreNav?.classList.add('visible');
+      showToast('Navbar Hidden', 'Desktop distraction-free focus. Click "Show Navbar" or press Esc.', 'info');
+    });
+  }
+  if (dom.btnRestoreNav) {
+    dom.btnRestoreNav.addEventListener('click', () => {
+      dom.topNav?.classList.remove('navbar-hidden');
+      dom.btnRestoreNav?.classList.remove('visible');
+    });
+  }
+
+  // Esc key exits Zen mode and restores navbar
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && state.isZenFullscreen) {
-      state.isZenFullscreen = false;
-      dom.studioContainer.classList.remove('zen-fullscreen');
-      dom.btnToggleZen.classList.remove('active');
-      dom.btnToggleZen.innerHTML = `<i data-lucide="maximize-2"></i>`;
-      lucide.createIcons();
+    if (e.key === 'Escape') {
+      if (dom.topNav?.classList.contains('navbar-hidden')) {
+        dom.topNav.classList.remove('navbar-hidden');
+        dom.btnRestoreNav?.classList.remove('visible');
+      }
+      if (dom.mobileNavDrawer?.classList.contains('open')) {
+        dom.mobileNavDrawer.classList.remove('open');
+      }
+      if (state.isZenFullscreen) {
+        state.isZenFullscreen = false;
+        dom.studioContainer.classList.remove('zen-fullscreen');
+        dom.btnToggleZen.classList.remove('active');
+        dom.btnToggleZen.innerHTML = `<i data-lucide="maximize-2"></i>`;
+        lucide.createIcons();
+      }
     }
   });
 

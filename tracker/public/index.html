@@ -38,36 +38,39 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
+  <!-- Floating Restore Navbar Pill (Shown when navbar is hidden on desktop) -->
+  <button class="floating-nav-pill" id="btnRestoreNav" title="Show Navigation Bar (Esc)">
+    <i data-lucide="chevron-down"></i>
+    <span>Show Navbar</span>
+  </button>
+
   <!-- Sleek Responsive Top Navigation Bar -->
-  <header class="top-nav">
+  <header class="top-nav" id="topNav">
     <div class="top-nav-main">
       <div class="nav-brand">
-        <div class="brand-badge">
-          <span class="status-dot"></span>
-          <span class="brand-code">RED TEAM</span>
-        </div>
-        <span class="brand-title">Foundations <span class="brand-sub">Journal</span></span>
+        <span class="brand-title"><i data-lucide="shield" class="brand-shield-icon"></i> Red Team <span class="brand-sub">Foundations</span></span>
+        <span class="active-tab-indicator" id="activeTabIndicator">Today's Mission</span>
       </div>
 
       <div class="header-actions">
-        <span class="streak-pill" id="streakVal" title="Daily Learning Streak">
-          🔥 <span class="streak-text-full">1 Day Streak</span><span class="streak-text-short">1d</span>
-        </span>
-        <button class="btn btn-secondary btn-icon-only" id="btnThemeToggle" title="Switch to White Theme" aria-label="Toggle Theme">
+        <button class="btn btn-secondary btn-icon-only" id="btnThemeToggle" title="Toggle Theme" aria-label="Toggle Theme">
           <i data-lucide="sun" id="themeToggleIcon"></i>
         </button>
         <button class="btn btn-primary btn-sm btn-new-note" id="btnQuickNewNote" title="Write Today's Note">
           <i data-lucide="plus"></i>
-          <span class="hide-on-compact">New Note</span>
+          <span class="hide-on-compact">Note</span>
         </button>
-        <button class="btn btn-secondary mobile-menu-toggle" id="btnMobileNavToggle" title="Open Navigation Menu" aria-label="Open Navigation Menu">
+        <button class="btn btn-secondary nav-menu-toggle" id="btnMobileNavToggle" title="Open Navigation Menu" aria-label="Open Navigation Menu">
           <i data-lucide="menu" id="menuToggleIcon"></i>
           <span class="mobile-menu-text">Menu</span>
+        </button>
+        <button class="btn btn-ghost btn-icon-only hide-navbar-btn" id="btnHideNavbar" title="Hide Navbar on Large Screen">
+          <i data-lucide="chevron-up"></i>
         </button>
       </div>
     </div>
 
-    <!-- Centered Clean Tab Navigation -->
+    <!-- Centered Clean Tab Navigation (Preserved for accessibility, hidden via CSS) -->
     <nav class="main-tabs-bar" aria-label="Main Navigation">
       <button class="tab-btn active" data-tab="studio">
         <i data-lucide="book-open"></i>
@@ -97,8 +100,14 @@
       </button>
     </nav>
 
-    <!-- Mobile Navigation Drawer (Collapsible) -->
+    <!-- Navigation Drawer (Collapsible for Desktop & Mobile) -->
     <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
+      <div class="drawer-stats-row">
+        <span class="streak-pill" id="streakVal" title="Daily Learning Streak">
+          🔥 <span class="streak-text-full">1 Day Streak</span><span class="streak-text-short">1d</span>
+        </span>
+        <span class="drawer-stats-sub">90-Day Red Team Journey</span>
+      </div>
       <div class="mobile-nav-links">
         <button class="mobile-tab-btn active" data-tab="studio">
           <div class="mobile-tab-left">
