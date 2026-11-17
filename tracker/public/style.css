@@ -334,44 +334,58 @@ a:hover {
   box-shadow: 0 1px 3px rgba(31, 35, 40, 0.08);
 }
 
-.top-nav.navbar-hidden {
-  transform: translateY(-100%);
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  pointer-events: none;
+/* Desktop Inline Nav Tabs (Clean, Sleek, Single Row) */
+.desktop-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0 auto 0 16px;
+  overflow: hidden;
 }
 
-.floating-nav-pill {
-  display: none;
-  position: fixed;
-  top: 8px;
-  right: 16px;
-  z-index: 1000;
-  background-color: var(--canvas-default);
-  border: 1px solid var(--accent-fg);
-  color: var(--accent-fg);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border-radius: 20px;
-  padding: 5px 12px;
-  font-size: 11.5px;
-  font-weight: 600;
-  cursor: pointer;
+.nav-tab-link {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
   transition: all var(--transition);
+  white-space: nowrap;
 }
-.floating-nav-pill.visible {
-  display: inline-flex !important;
+
+.nav-tab-link:hover {
+  color: var(--fg-default);
+  background-color: var(--canvas-hover);
 }
-.floating-nav-pill:hover {
-  background-color: var(--accent-muted);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+
+.nav-tab-link.active {
+  color: var(--fg-default);
+  background-color: var(--canvas-default);
+  border-color: var(--border-default);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
-.floating-nav-pill i {
-  width: 13px;
-  height: 13px;
+
+[data-theme="light"] .nav-tab-link.active {
+  background-color: #f6f8fa;
+  border-color: #d0d7de;
+  color: #0969da;
+}
+
+.nav-tab-link i {
+  width: 14px;
+  height: 14px;
+  color: var(--fg-muted);
+}
+
+.nav-tab-link.active i {
+  color: var(--accent-fg);
 }
 
 .top-nav-main {
@@ -505,9 +519,9 @@ a:hover {
   height: 16px;
 }
 
-.mobile-menu-toggle,
-.nav-menu-toggle {
-  display: inline-flex !important;
+/* Menu button is strictly hidden on desktop (> 850px), only shown on small screens! */
+.mobile-menu-toggle {
+  display: none !important;
   align-items: center;
   gap: 6px;
   background-color: var(--canvas-default);
@@ -521,40 +535,14 @@ a:hover {
   transition: all var(--transition);
   box-shadow: var(--shadow-sm);
 }
-.mobile-menu-toggle:hover,
-.nav-menu-toggle:hover {
+.mobile-menu-toggle:hover {
   background-color: var(--canvas-hover);
   border-color: var(--border-focus);
   color: var(--accent-fg);
 }
-.mobile-menu-toggle i,
-.nav-menu-toggle i {
+.mobile-menu-toggle i {
   width: 16px;
   height: 16px;
-}
-
-.hide-navbar-btn {
-  color: var(--fg-muted);
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  background: transparent;
-  border: 1px solid transparent;
-  transition: all var(--transition);
-}
-.hide-navbar-btn:hover {
-  color: var(--fg-default);
-  background-color: var(--canvas-hover);
-  border-color: var(--border-default);
-}
-.hide-navbar-btn i {
-  width: 15px;
-  height: 15px;
 }
 
 /* Subnav Tabs (Hidden by default to eliminate desktop & mobile clutter) */
@@ -2816,7 +2804,10 @@ select.form-control {
     padding: 0 12px;
   }
   .top-nav-main {
-    height: 52px;
+    height: 48px;
+  }
+  .desktop-nav-tabs {
+    display: none !important;
   }
   .main-tabs-bar {
     display: none !important;

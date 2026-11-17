@@ -38,19 +38,40 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-  <!-- Floating Restore Navbar Pill (Shown when navbar is hidden on desktop) -->
-  <button class="floating-nav-pill" id="btnRestoreNav" title="Show Navigation Bar (Esc)">
-    <i data-lucide="chevron-down"></i>
-    <span>Show Navbar</span>
-  </button>
-
   <!-- Sleek Responsive Top Navigation Bar -->
   <header class="top-nav" id="topNav">
     <div class="top-nav-main">
       <div class="nav-brand">
         <span class="brand-title"><i data-lucide="shield" class="brand-shield-icon"></i> Red Team <span class="brand-sub">Foundations</span></span>
-        <span class="active-tab-indicator" id="activeTabIndicator">Today's Mission</span>
       </div>
+
+      <!-- Desktop Inline Clean Tabs (Single Row, NO Menu button on Desktop) -->
+      <nav class="desktop-nav-tabs" aria-label="Desktop Navigation">
+        <button class="nav-tab-link active" data-tab="studio">
+          <i data-lucide="book-open"></i>
+          <span>Today's Mission</span>
+        </button>
+        <button class="nav-tab-link" data-tab="roadmap">
+          <i data-lucide="map"></i>
+          <span>Syllabus</span>
+        </button>
+        <button class="nav-tab-link" data-tab="timer">
+          <i data-lucide="clock"></i>
+          <span>30-Min Protocol</span>
+        </button>
+        <button class="nav-tab-link" data-tab="explorer">
+          <i data-lucide="folder-git-2"></i>
+          <span>Notes Vault</span>
+        </button>
+        <button class="nav-tab-link" data-tab="arsenal">
+          <i data-lucide="shield-check"></i>
+          <span>Resources</span>
+        </button>
+        <button class="nav-tab-link" data-tab="git-settings">
+          <i data-lucide="git-commit"></i>
+          <span>Git Sync</span>
+        </button>
+      </nav>
 
       <div class="header-actions">
         <button class="btn btn-secondary btn-icon-only" id="btnThemeToggle" title="Toggle Theme" aria-label="Toggle Theme">
@@ -60,47 +81,15 @@
           <i data-lucide="plus"></i>
           <span class="hide-on-compact">Note</span>
         </button>
-        <button class="btn btn-secondary nav-menu-toggle" id="btnMobileNavToggle" title="Open Navigation Menu" aria-label="Open Navigation Menu">
+        <!-- Menu button: ONLY visible on small screens (mobile/tablet), hidden on desktop! -->
+        <button class="btn btn-secondary mobile-menu-toggle" id="btnMobileNavToggle" title="Open Navigation Menu" aria-label="Open Navigation Menu">
           <i data-lucide="menu" id="menuToggleIcon"></i>
           <span class="mobile-menu-text">Menu</span>
-        </button>
-        <button class="btn btn-ghost btn-icon-only hide-navbar-btn" id="btnHideNavbar" title="Hide Navbar on Large Screen">
-          <i data-lucide="chevron-up"></i>
         </button>
       </div>
     </div>
 
-    <!-- Centered Clean Tab Navigation (Preserved for accessibility, hidden via CSS) -->
-    <nav class="main-tabs-bar" aria-label="Main Navigation">
-      <button class="tab-btn active" data-tab="studio">
-        <i data-lucide="book-open"></i>
-        <span>Today's Mission</span>
-      </button>
-      <button class="tab-btn" data-tab="roadmap">
-        <i data-lucide="map"></i>
-        <span>Course Syllabus</span>
-        <span class="tab-badge" id="roadmapProgressBadge">Day 1/90</span>
-      </button>
-      <button class="tab-btn" data-tab="timer">
-        <i data-lucide="clock"></i>
-        <span>30-Min Protocol</span>
-      </button>
-      <button class="tab-btn" data-tab="explorer">
-        <i data-lucide="folder-git-2"></i>
-        <span>Notes Vault</span>
-        <span class="tab-badge" id="notesCountBadge">0</span>
-      </button>
-      <button class="tab-btn" data-tab="arsenal">
-        <i data-lucide="shield-check"></i>
-        <span>Resources</span>
-      </button>
-      <button class="tab-btn" data-tab="git-settings">
-        <i data-lucide="git-commit"></i>
-        <span>Git Sync</span>
-      </button>
-    </nav>
-
-    <!-- Navigation Drawer (Collapsible for Desktop & Mobile) -->
+    <!-- Navigation Drawer (Collapsible for Small Screens) -->
     <div class="mobile-nav-drawer" id="mobileNavDrawer" aria-hidden="true">
       <div class="drawer-stats-row">
         <span class="streak-pill" id="streakVal" title="Daily Learning Streak">

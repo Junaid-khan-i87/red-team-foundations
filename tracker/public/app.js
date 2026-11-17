@@ -195,7 +195,7 @@ const dom = {
   mobileNotesBadge: document.getElementById('mobileNotesBadge'),
 
   // Tabs
-  tabBtns: document.querySelectorAll('.tab-btn'),
+  tabBtns: document.querySelectorAll('.tab-btn, .nav-tab-link'),
   tabPanes: document.querySelectorAll('.tab-pane'),
 
   // Studio Elements
